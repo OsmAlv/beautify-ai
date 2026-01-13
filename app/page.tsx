@@ -272,8 +272,8 @@ const styles = {
     gap: "12px",
     justifyContent: "center",
     marginTop: "18px",
-    flexWrap: "wrap",
-  },
+    flexWrap: "wrap" as const,
+  } as React.CSSProperties,
   download: {
     display: "inline-block",
     marginTop: "15px",
