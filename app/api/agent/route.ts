@@ -40,7 +40,7 @@ async function waitForResult(requestId: string, maxAttempts = 120) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { imageUrl, gender = "female" } = await request.json();
+    const { imageUrl, intensity = "pretty" } = await request.json();
 
     if (!WAVESPEED_API_KEY) {
       console.error("❌ API ключ не найден в переменных окружения");
@@ -51,16 +51,16 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("🔑 API ключ загружен, длина:", WAVESPEED_API_KEY.length);
-    console.log("👤 Пол:", gender);
+    console.log("🌡️ Интенсивность:", intensity);
     console.log("📤 Отправляем на Wavespeed API...");
 
-    // Разные промпты для мужчин и женщин
+    // Разные промпты для разных интенсивностей
     const prompts = {
-      female: "Make this woman a lot more sexier. Add openness to the outfits but keep their color, keep the skin texture, keep the makeup as in the donor photo. ",
-      male: "make this man more sexier. Keep the skin texture natural. Keep face expressions. Add a little muscles to the body but under te clothes do not show it open. keep the color of the outfit as in the donor photo. ",
+      pretty: "Make this woman naturally more beautiful and attractive. Enhance her features subtly - improve skin tone, brighten eyes, add a subtle glow. Keep her looking like herself but just the best version. Maintain the original outfit color and style.",
+      hot: "Transform this woman into a stunning and incredibly attractive version of herself. Enhance her beauty dramatically - perfect skin, gorgeous eyes, fuller lips, enhanced features. Make her look like a model. Add sophistication and allure while keeping recognizable features."
     };
 
-    const prompt = prompts[gender as keyof typeof prompts] || prompts.female;
+    const prompt = prompts[intensity as keyof typeof prompts] || prompts.pretty;
 
     // Отправляем запрос к Wavespeed API
     const editResponse = await fetch(WAVESPEED_API_URL, {

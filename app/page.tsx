@@ -8,7 +8,7 @@ export default function Home() {
   const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [gender, setGender] = useState<"male" | "female">("female");
+  const [intensity, setIntensity] = useState<"pretty" | "hot">("pretty");
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -39,7 +39,7 @@ export default function Home() {
       const res = await fetch("/api/agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: imageData, gender }),
+        body: JSON.stringify({ imageUrl: imageData, intensity }),
       });
 
       const data = await res.json();
@@ -65,24 +65,26 @@ export default function Home() {
 
         <div style={styles.genderSelect}>
           <button
-            onClick={() => setGender("female")}
+            onClick={() => setIntensity("pretty")}
             style={{
               ...styles.genderButton,
-              background: gender === "female" ? "#667eea" : "#ddd",
-              color: gender === "female" ? "white" : "#333",
+              background: intensity === "pretty" ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" : "#e8e8e8",
+              color: intensity === "pretty" ? "white" : "#666",
+              boxShadow: intensity === "pretty" ? "0 8px 20px rgba(102, 126, 234, 0.3)" : "none",
             }}
           >
-            👩 Женщина
+            ✨ Pretty
           </button>
           <button
-            onClick={() => setGender("male")}
+            onClick={() => setIntensity("hot")}
             style={{
               ...styles.genderButton,
-              background: gender === "male" ? "#667eea" : "#ddd",
-              color: gender === "male" ? "white" : "#333",
+              background: intensity === "hot" ? "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" : "#e8e8e8",
+              color: intensity === "hot" ? "white" : "#666",
+              boxShadow: intensity === "hot" ? "0 8px 20px rgba(245, 87, 108, 0.3)" : "none",
             }}
           >
-            👨 Мужчина
+            🔥 Hot
           </button>
         </div>
 
