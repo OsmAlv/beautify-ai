@@ -893,8 +893,11 @@ export default function Home() {
               </ul>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                <a
-                  href="/auth?mode=signup"
+                <button
+                  onClick={() => {
+                    setShowAuthModal(false);
+                    setTimeout(() => window.location.href = "/auth?mode=signup", 100);
+                  }}
                   style={{
                     padding: "14px 20px",
                     background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -903,12 +906,18 @@ export default function Home() {
                     borderRadius: "8px",
                     fontWeight: "700",
                     fontSize: "15px",
+                    border: "none",
+                    cursor: "pointer",
+                    fontFamily: "inherit",
                   }}
                 >
                   Регистрация
-                </a>
-                <a
-                  href="/auth?mode=login"
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAuthModal(false);
+                    setTimeout(() => window.location.href = "/auth?mode=login", 100);
+                  }}
                   style={{
                     padding: "14px 20px",
                     background: "#f0f0f0",
@@ -917,10 +926,13 @@ export default function Home() {
                     borderRadius: "8px",
                     fontWeight: "700",
                     fontSize: "15px",
+                    border: "none",
+                    cursor: "pointer",
+                    fontFamily: "inherit",
                   }}
                 >
                   Я уже зарегистрирован
-                </a>
+                </button>
               </div>
 
               <button
