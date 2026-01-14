@@ -1,51 +1,55 @@
 .container {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2rem;
+  padding: 12px;
   font-family: var(--font-poppins), sans-serif;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  padding: 3rem;
-  margin-bottom: 3rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(10px);
 }
 
 .headerContent {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
-  gap: 2rem;
+  gap: 12px;
 }
 
 .header h1 {
   margin: 0;
-  font-size: 3rem;
+  font-size: 24px;
   font-weight: 700;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   font-family: var(--font-space-grotesk), sans-serif;
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
+  width: 100%;
 }
 
 .email {
-  margin: 0.5rem 0 0 0;
+  margin: 4px 0 0 0;
   color: #666;
-  font-size: 1rem;
+  font-size: 12px;
 }
 
 .backButton {
-  padding: 0.75rem 1.5rem;
+  padding: 10px 16px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  border-radius: 50px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   text-decoration: none;
@@ -59,30 +63,30 @@
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .statCard {
   background: rgba(255, 255, 255, 0.95);
-  padding: 2rem;
-  border-radius: 15px;
+  padding: 16px;
+  border-radius: 12px;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .statCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .statLabel {
-  font-size: 0.95rem;
+  font-size: 12px;
   color: #666;
-  margin-bottom: 0.75rem;
+  margin-bottom: 8px;
   font-weight: 500;
 }
 
@@ -140,17 +144,18 @@
 
 .generationsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
 }
 
 .generationCard {
-  border-radius: 15px;
+  border-radius: 10px;
   overflow: hidden;
   background: white;
   border: 2px solid #eee;
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
   cursor: pointer;
+  aspect-ratio: 1;
 }
 
 .generationCard:hover {
@@ -476,5 +481,59 @@
 
   .modalBody {
     padding: 1rem;
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1024px) {
+  .container {
+    padding: 2rem;
+  }
+
+  .header {
+    padding: 3rem;
+    margin-bottom: 3rem;
+    border-radius: 20px;
+  }
+
+  .headerContent {
+    flex-direction: row;
+    gap: 2rem;
+  }
+
+  .header h1 {
+    font-size: 3rem;
+    letter-spacing: -1px;
+  }
+
+  .stats {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .statCard {
+    padding: 2rem;
+    border-radius: 15px;
+  }
+
+  .statCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .generationsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .generationCard {
+    border-radius: 15px;
+  }
+
+  .backButton {
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-size: 14px;
   }
 }
