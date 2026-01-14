@@ -32,6 +32,17 @@ export default function Home() {
     if (typeof window !== "undefined") {
       const savedGenerations = localStorage.getItem("unauth_generations");
       setUnAuthGenerations(parseInt(savedGenerations || "0"));
+      
+      // Загрузить кэшированные данные пользователя если есть
+      const cachedUserData = localStorage.getItem("cached_user_data");
+      if (cachedUserData) {
+        try {
+          setUserData(JSON.parse(cachedUserData));
+          console.log("✅ Loaded cached user data from localStorage");
+        } catch (e) {
+          console.error("Failed to parse cached user data:", e);
+        }
+      }
     }
 
     const checkAuth = async () => {
@@ -42,33 +53,39 @@ export default function Home() {
       if (authUser) {
         setUser(authUser);
         
-        // Retry логика для загрузки профиля
-        let userData = null;
-        let retries = 0;
-        const maxRetries = 5;
+        // Быстрая попытка загрузить профиль
+        const { data } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", authUser.id)
+          .single();
         
-        while (!userData && retries < maxRetries) {
-          const { data } = await supabase
-            .from("users")
-            .select("*")
-            .eq("id", authUser.id)
-            .single();
+        if (data) {
+          console.log("✅ User profile loaded immediately");
+          setUserData(data);
+        } else {
+          // Если не загрузилось - только тогда retry с меньшей задержкой
+          let userData = null;
+          let retries = 0;
+          const maxRetries = 3; // Уменьшили с 5 до 3
           
-          if (data) {
-            userData = data;
-            console.log("✅ User data loaded on attempt", retries + 1);
-            setUserData(data);
-            break;
+          while (!userData && retries < maxRetries) {
+            retries++;
+            await new Promise(resolve => setTimeout(resolve, 200)); // Уменьшили с 500 до 200ms
+            
+            const { data: retryData } = await supabase
+              .from("users")
+              .select("*")
+              .eq("id", authUser.id)
+              .single();
+            
+            if (retryData) {
+              userData = retryData;
+              console.log("✅ User data loaded on retry", retries);
+              setUserData(userData);
+              break;
+            }
           }
-          
-          retries++;
-          if (retries < maxRetries) {
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
-        }
-        
-        if (!userData && retries >= maxRetries) {
-          console.warn("⚠️ Could not load user data after", maxRetries, "retries");
         }
       }
     };
@@ -81,34 +98,39 @@ export default function Home() {
         if (session?.user) {
           setUser(session.user);
           
-          // Retry логика - иногда профиль может быть создан с задержкой на серверe
-          let userData = null;
-          let retries = 0;
-          const maxRetries = 5;
+          // Быстрая попытка загрузить
+          const { data } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", session.user.id)
+            .single();
           
-          while (!userData && retries < maxRetries) {
-            const { data } = await supabase
-              .from("users")
-              .select("*")
-              .eq("id", session.user.id)
-              .single();
+          if (data) {
+            console.log("✅ Auth state: user data loaded immediately");
+            setUserData(data);
+          } else {
+            // Если не загрузилось - только тогда retry
+            let userData = null;
+            let retries = 0;
+            const maxRetries = 2; // Еще меньше для auth state change
             
-            if (data) {
-              userData = data;
-              console.log("✅ User data loaded on attempt", retries + 1);
-              setUserData(data);
-              break;
+            while (!userData && retries < maxRetries) {
+              retries++;
+              await new Promise(resolve => setTimeout(resolve, 150));
+              
+              const { data: retryData } = await supabase
+                .from("users")
+                .select("*")
+                .eq("id", session.user.id)
+                .single();
+              
+              if (retryData) {
+                userData = retryData;
+                console.log("✅ Auth state: user data loaded on retry", retries);
+                setUserData(userData);
+                break;
+              }
             }
-            
-            retries++;
-            if (retries < maxRetries) {
-              // Жди 500ms перед следующей попыткой
-              await new Promise(resolve => setTimeout(resolve, 500));
-            }
-          }
-          
-          if (!userData && retries >= maxRetries) {
-            console.warn("⚠️ Could not load user data after", maxRetries, "retries");
           }
         } else {
           setUser(null);
@@ -121,6 +143,16 @@ export default function Home() {
       authListener?.subscription.unsubscribe();
     };
   }, []);
+
+  // Сохранять userData в localStorage при изменении
+  useEffect(() => {
+    if (userData && typeof window !== "undefined") {
+      localStorage.setItem("cached_user_data", JSON.stringify(userData));
+      console.log("💾 Cached user data to localStorage");
+    } else if (userData === null && typeof window !== "undefined") {
+      localStorage.removeItem("cached_user_data");
+    }
+  }, [userData]);
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
