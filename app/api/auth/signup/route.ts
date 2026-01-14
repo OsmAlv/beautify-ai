@@ -79,29 +79,30 @@ export async function POST(request: NextRequest) {
     if (userId) {
       console.log("📝 Creating user profile...");
       
-      const insertResponse = await fetch(`${supabaseUrl}/rest/v1/users`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": serviceRoleKey,
-          "Authorization": `Bearer ${serviceRoleKey}`,
-        },
-        body: JSON.stringify({
-          id: userId,
-          email,
-          username: username || email.split("@")[0],
-          is_superuser: false,
-          nippies_balance: 0,
-          pretty_generations_remaining: 5,
-          hot_generations_remaining: 1,
-        }),
-      });
+      try {
+        const { createClient } = await import("@supabase/supabase-js");
+        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+        
+        const { error: profileError, data: profileData } = await supabaseAdmin
+          .from("users")
+          .insert({
+            id: userId,
+            email,
+            username: username || email.split("@")[0],
+            is_superuser: false,
+            nippies_balance: 0,
+            pretty_generations_remaining: 5,
+            hot_generations_remaining: 1,
+          });
 
-      if (!insertResponse.ok) {
-        console.error("❌ Profile creation failed:", await insertResponse.text());
-        // Don't fail - auth succeeded
-      } else {
-        console.log("✅ User profile created");
+        if (profileError) {
+          console.error("❌ Profile creation failed:", profileError);
+          // Don't fail - auth succeeded, profile creation is secondary
+        } else {
+          console.log("✅ User profile created:", profileData);
+        }
+      } catch (err) {
+        console.error("❌ Profile creation error:", err);
       }
     }
 
