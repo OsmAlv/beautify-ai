@@ -41,15 +41,34 @@ export default function Home() {
 
       if (authUser) {
         setUser(authUser);
-        // Получить данные пользователя
-        const { data } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", authUser.id)
-          .single();
-
-        if (data) {
-          setUserData(data);
+        
+        // Retry логика для загрузки профиля
+        let userData = null;
+        let retries = 0;
+        const maxRetries = 5;
+        
+        while (!userData && retries < maxRetries) {
+          const { data } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", authUser.id)
+            .single();
+          
+          if (data) {
+            userData = data;
+            console.log("✅ User data loaded on attempt", retries + 1);
+            setUserData(data);
+            break;
+          }
+          
+          retries++;
+          if (retries < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+        
+        if (!userData && retries >= maxRetries) {
+          console.warn("⚠️ Could not load user data after", maxRetries, "retries");
         }
       }
     };
@@ -61,14 +80,35 @@ export default function Home() {
       async (event, session) => {
         if (session?.user) {
           setUser(session.user);
-          const { data } = await supabase
-            .from("users")
-            .select("*")
-            .eq("id", session.user.id)
-            .single();
-
-          if (data) {
-            setUserData(data);
+          
+          // Retry логика - иногда профиль может быть создан с задержкой на серверe
+          let userData = null;
+          let retries = 0;
+          const maxRetries = 5;
+          
+          while (!userData && retries < maxRetries) {
+            const { data } = await supabase
+              .from("users")
+              .select("*")
+              .eq("id", session.user.id)
+              .single();
+            
+            if (data) {
+              userData = data;
+              console.log("✅ User data loaded on attempt", retries + 1);
+              setUserData(data);
+              break;
+            }
+            
+            retries++;
+            if (retries < maxRetries) {
+              // Жди 500ms перед следующей попыткой
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
+          }
+          
+          if (!userData && retries >= maxRetries) {
+            console.warn("⚠️ Could not load user data after", maxRetries, "retries");
           }
         } else {
           setUser(null);
