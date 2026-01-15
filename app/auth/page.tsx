@@ -71,11 +71,16 @@ export default function AuthPage() {
 
         console.log("✅ Пользователь создан:", result.user?.id);
 
-        setSuccess("✅ Регистрация успешна! Проверь почту для подтверждения.");
+        setSuccess("✅ Регистрация успешна! Переходим на главную...");
         setEmail("");
         setPassword("");
         setUsername("");
-      } else {
+        
+        // Сразу перенаправляем на главную (профиль загрузится автоматически)
+        setTimeout(() => {
+          console.log("🔄 Перенаправляю на главную после регистрации");
+          window.location.href = "/";
+        }, 500); // Минимальная задержка для UX
         // Вход
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
@@ -178,7 +183,7 @@ export default function AuthPage() {
   return (
     <main style={styles.main}>
       <div style={styles.container}>
-        <h1 style={styles.title}>🎨 Beautify.AI</h1>
+        <h1 style={styles.title}> Beautify.AI</h1>
 
         {error && <p style={styles.error}>{error}</p>}
         {success && <p style={styles.success}>{success}</p>}

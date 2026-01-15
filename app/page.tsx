@@ -46,47 +46,42 @@ export default function Home() {
     }
 
     const checkAuth = async () => {
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser();
+      // Сначала проверяем текущую сессию
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { user: authUser } } = await supabase.auth.getUser();
 
-      if (authUser) {
-        setUser(authUser);
+      if (authUser || session?.user) {
+        const userId = authUser?.id || session?.user?.id;
+        setUser(authUser || session?.user || null);
         
-        // Быстрая попытка загрузить профиль
-        const { data } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", authUser.id)
-          .single();
+        // Аgressивная загрузка профиля с retry
+        let userData = null;
+        let retries = 0;
+        const maxRetries = 5; // Увеличили обратно
         
-        if (data) {
-          console.log("✅ User profile loaded immediately");
-          setUserData(data);
-        } else {
-          // Если не загрузилось - только тогда retry с меньшей задержкой
-          let userData = null;
-          let retries = 0;
-          const maxRetries = 3; // Уменьшили с 5 до 3
+        while (!userData && retries <= maxRetries) {
+          const { data } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", userId)
+            .single();
           
-          while (!userData && retries < maxRetries) {
-            retries++;
-            await new Promise(resolve => setTimeout(resolve, 200)); // Уменьшили с 500 до 200ms
-            
-            const { data: retryData } = await supabase
-              .from("users")
-              .select("*")
-              .eq("id", authUser.id)
-              .single();
-            
-            if (retryData) {
-              userData = retryData;
-              console.log("✅ User data loaded on retry", retries);
-              setUserData(userData);
-              break;
-            }
+          if (data) {
+            console.log("✅ User profile loaded on attempt", retries + 1);
+            setUserData(data);
+            return;
+          }
+          
+          retries++;
+          if (retries <= maxRetries) {
+            // Прогрессивная задержка: 100ms, 150ms, 200ms...
+            const delay = 100 + (retries * 50);
+            console.log(`⏳ Retry ${retries}/${maxRetries} (waiting ${delay}ms)`);
+            await new Promise(resolve => setTimeout(resolve, delay));
           }
         }
+        
+        console.warn("⚠️ Failed to load user profile after", maxRetries, "retries");
       }
     };
 
@@ -95,46 +90,44 @@ export default function Home() {
     // Слушать изменения аутентификации
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("🔐 Auth state changed:", event, "User:", session?.user?.email);
+        
         if (session?.user) {
           setUser(session.user);
           
-          // Быстрая попытка загрузить
-          const { data } = await supabase
-            .from("users")
-            .select("*")
-            .eq("id", session.user.id)
-            .single();
+          // Более агрессивная загрузка профиля при смене auth state
+          let userData = null;
+          let retries = 0;
+          const maxRetries = 6; // Увеличили для новых аккаунтов
           
-          if (data) {
-            console.log("✅ Auth state: user data loaded immediately");
-            setUserData(data);
-          } else {
-            // Если не загрузилось - только тогда retry
-            let userData = null;
-            let retries = 0;
-            const maxRetries = 2; // Еще меньше для auth state change
+          while (!userData && retries <= maxRetries) {
+            const { data } = await supabase
+              .from("users")
+              .select("*")
+              .eq("id", session.user.id)
+              .single();
             
-            while (!userData && retries < maxRetries) {
-              retries++;
-              await new Promise(resolve => setTimeout(resolve, 150));
-              
-              const { data: retryData } = await supabase
-                .from("users")
-                .select("*")
-                .eq("id", session.user.id)
-                .single();
-              
-              if (retryData) {
-                userData = retryData;
-                console.log("✅ Auth state: user data loaded on retry", retries);
-                setUserData(userData);
-                break;
-              }
+            if (data) {
+              console.log("✅ Auth state: user data loaded on attempt", retries + 1);
+              setUserData(data);
+              // Очистить старый кэш и сохранить новые данные
+              localStorage.setItem("cached_user_data", JSON.stringify(data));
+              return;
+            }
+            
+            retries++;
+            if (retries <= maxRetries) {
+              const delay = 100 + (retries * 75); // Прогрессивная задержка: 175ms, 250ms...
+              console.log(`⏳ Auth retry ${retries}/${maxRetries} (${delay}ms)`);
+              await new Promise(resolve => setTimeout(resolve, delay));
             }
           }
+          
+          console.warn("⚠️ Failed to load user profile after retries, using cache");
         } else {
           setUser(null);
           setUserData(null);
+          localStorage.removeItem("cached_user_data");
         }
       }
     );
