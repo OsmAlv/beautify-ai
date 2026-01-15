@@ -95,10 +95,13 @@ export default function Home() {
         if (session?.user) {
           setUser(session.user);
           
-          // Более агрессивная загрузка профиля при смене auth state
+          // Для SIGNED_IN события - очень агрессивная загрузка
+          const isSignedIn = event === "SIGNED_IN";
+          const maxRetries = isSignedIn ? 8 : 6; // Еще больше для нового входа
+          const initialDelay = isSignedIn ? 50 : 100; // Быстрее начинаем
+          
           let userData = null;
           let retries = 0;
-          const maxRetries = 6; // Увеличили для новых аккаунтов
           
           while (!userData && retries <= maxRetries) {
             const { data } = await supabase
@@ -108,7 +111,7 @@ export default function Home() {
               .single();
             
             if (data) {
-              console.log("✅ Auth state: user data loaded on attempt", retries + 1);
+              console.log(`✅ ${event}: user data loaded on attempt ${retries + 1}`);
               setUserData(data);
               // Очистить старый кэш и сохранить новые данные
               localStorage.setItem("cached_user_data", JSON.stringify(data));
@@ -117,13 +120,16 @@ export default function Home() {
             
             retries++;
             if (retries <= maxRetries) {
-              const delay = 100 + (retries * 75); // Прогрессивная задержка: 175ms, 250ms...
-              console.log(`⏳ Auth retry ${retries}/${maxRetries} (${delay}ms)`);
+              // Быстрые повторы вначале, потом более медленные
+              const delay = retries <= 3 
+                ? initialDelay + (retries * 30) 
+                : initialDelay + (retries * 100);
+              console.log(`⏳ ${event} retry ${retries}/${maxRetries} (${delay}ms)`);
               await new Promise(resolve => setTimeout(resolve, delay));
             }
           }
           
-          console.warn("⚠️ Failed to load user profile after retries, using cache");
+          console.warn(`⚠️ Failed to load user profile for ${event} after retries, using cache`);
         } else {
           setUser(null);
           setUserData(null);

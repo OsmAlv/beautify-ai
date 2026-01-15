@@ -76,11 +76,36 @@ export default function AuthPage() {
         setPassword("");
         setUsername("");
         
-        // Сразу перенаправляем на главную (профиль загрузится автоматически)
-        setTimeout(() => {
-          console.log("🔄 Перенаправляю на главную после регистрации");
+        // Дождаться загрузки профиля перед редиректом
+        console.log("⏳ Ожидаю загрузки профиля...");
+        let profileLoaded = false;
+        let attempts = 0;
+        
+        while (!profileLoaded && attempts < 10) {
+          attempts++;
+          const { data } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", result.user?.id)
+            .single();
+          
+          if (data) {
+            console.log("✅ Профиль загружен, редиректю");
+            profileLoaded = true;
+            // Профиль готов, редиректим
+            window.location.href = "/";
+            break;
+          }
+          
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        
+        // Fallback редирект если профиль не загружен
+        if (!profileLoaded) {
+          console.warn("⚠️ Профиль не загружен, редиректю anyway");
           window.location.href = "/";
-        }, 500); // Минимальная задержка для UX
+        }
+      } else {
         // Вход
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
@@ -90,14 +115,47 @@ export default function AuthPage() {
         if (signInError) {
           setError(`Ошибка входа: ${signInError.message}`);
           console.error("SignIn error:", signInError);
+          setLoading(false);
           return;
         }
 
+        console.log("✅ Вход успешен, ожидаю загрузки профиля...");
         setSuccess("✅ Успешный вход!");
-        // Редирект на главную страницу
-        setTimeout(() => {
+        
+        // Дождаться загрузки профиля перед редиректом
+        let profileLoaded = false;
+        let attempts = 0;
+        
+        while (!profileLoaded && attempts < 10) {
+          attempts++;
+          const { data: { user } } = await supabase.auth.getUser();
+          
+          if (user) {
+            const { data } = await supabase
+              .from("users")
+              .select("*")
+              .eq("id", user.id)
+              .single();
+            
+            if (data) {
+              console.log("✅ Профиль загружен после входа, редиректю");
+              profileLoaded = true;
+              // Сохраняем в кэш
+              localStorage.setItem("cached_user_data", JSON.stringify(data));
+              // Профиль готов, редиректим
+              window.location.href = "/";
+              break;
+            }
+          }
+          
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        
+        // Fallback редирект если профиль не загружен
+        if (!profileLoaded) {
+          console.warn("⚠️ Профиль не загружен после входа, редиректю anyway");
           window.location.href = "/";
-        }, 1000);
+        }
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "Неизвестная ошибка";
