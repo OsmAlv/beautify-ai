@@ -254,9 +254,31 @@ export default function Home() {
   }
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setUserData(null);
+    console.log("🚪 Начинаю выход из аккаунта...");
+    try {
+      await supabase.auth.signOut();
+      console.log("✅ SignOut успешен");
+      
+      setUser(null);
+      setUserData(null);
+      
+      // Очистить все кэши
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("cached_user_data");
+        localStorage.removeItem("unauth_generations");
+      }
+      
+      console.log("🔄 Редиректю на главную после выхода");
+      // Редирект на главную
+      window.location.href = "/";
+    } catch (err) {
+      console.error("❌ Logout error:", err);
+      // Все равно очищаем и редиректим
+      setUser(null);
+      setUserData(null);
+      localStorage.removeItem("cached_user_data");
+      window.location.href = "/";
+    }
   };
 
   const styles = {
