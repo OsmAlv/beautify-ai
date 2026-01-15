@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import "./mobile.css";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -26,6 +27,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      </head>
       <body className={`${poppins.variable} ${spaceGrotesk.variable}`} style={{ fontFamily: "var(--font-poppins)" }}>
         {children}
       </body>
