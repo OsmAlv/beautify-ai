@@ -525,23 +525,6 @@ export default function Home() {
                   {userData.username}
                 </div>
                 <div style={{ marginTop: "8px", display: "flex", gap: "8px", justifyContent: "flex-end" }}>
-                  <a href="/goon-ai" style={{ textDecoration: "none" }}>
-                    <button style={{
-                      padding: "6px 12px",
-                      background: "linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%)",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      transition: "transform 0.2s",
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}>
-                      🌶 Goon AI
-                    </button>
-                  </a>
                   <a href="/profile" style={{ textDecoration: "none" }}>
                     <button style={{
                       padding: "6px 12px",
