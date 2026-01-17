@@ -182,11 +182,11 @@ export default function Home() {
     // Если авторизован - проверить лимиты
     if (user && userData && !userData.is_superuser) {
       if (intensity === "pretty" && userData.pretty_generations_remaining <= 0) {
-        setError("❌ Исчерпаны бесплатные генерации Pretty режима");
+        setError("Исчерпаны бесплатные генерации Pretty режима");
         return;
       }
       if (intensity === "hot" && userData.hot_generations_remaining <= 0 && userData.nippies_balance < 37) {
-        setError("❌ Недостаточно nippies для Hot режима (нужно 37)");
+        setError("Недостаточно nippies для Hot режима (нужно 37)");
         return;
       }
     }
@@ -293,18 +293,20 @@ export default function Home() {
       margin: "0 auto",
       background: "rgba(255, 255, 255, 0.98)",
       borderRadius: "24px",
-      padding: "48px",
+      padding: window.innerWidth <= 768 ? "20px" : "48px",
       boxShadow: "0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5)",
       backdropFilter: "blur(20px)",
       border: "1px solid rgba(255, 255, 255, 0.3)",
     } as React.CSSProperties,
     header: {
       display: "flex",
+      flexDirection: window.innerWidth <= 768 ? "column" as const : "row" as const,
       justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: "40px",
+      alignItems: window.innerWidth <= 768 ? "flex-start" : "center",
+      marginBottom: window.innerWidth <= 768 ? "24px" : "40px",
       borderBottom: "2px solid #f0f0f0",
-      paddingBottom: "20px",
+      paddingBottom: window.innerWidth <= 768 ? "16px" : "20px",
+      gap: window.innerWidth <= 768 ? "12px" : "0",
     } as React.CSSProperties,
     userInfo: {
       fontSize: "14px",
@@ -318,7 +320,7 @@ export default function Home() {
       marginBottom: "8px",
     } as React.CSSProperties,
     title: {
-      fontSize: "48px",
+      fontSize: window.innerWidth <= 768 ? "28px" : "48px",
       fontWeight: "900",
       color: "#1a1a2e",
       margin: "0",
@@ -327,7 +329,7 @@ export default function Home() {
       WebkitTextFillColor: "transparent",
       backgroundClip: "text",
       fontFamily: "var(--font-space-grotesk, sans-serif)",
-      letterSpacing: "-2px",
+      letterSpacing: window.innerWidth <= 768 ? "-1px" : "-2px",
       lineHeight: "1.2",
     } as React.CSSProperties,
     subtitle: {
@@ -488,7 +490,7 @@ export default function Home() {
           fontFamily: "var(--font-space-grotesk, sans-serif)",
           letterSpacing: "-1.5px",
         }}>
-          ✨ Beautify.AI
+          Beautify.AI
         </h1>
         <p style={{
           fontSize: "18px",
@@ -548,7 +550,7 @@ export default function Home() {
                     }}
                     onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
                     onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}>
-                      📊 Мой профиль
+                      Мой профиль
                     </button>
                   </a>
                   <button onClick={handleLogout} style={{
@@ -657,7 +659,7 @@ export default function Home() {
                 letterSpacing: "1px",
                 marginBottom: "12px",
               }}>
-                🎬 Стиль преобразования
+                Стиль преобразования
               </h3>
               <div style={{
                 display: "grid",
@@ -665,8 +667,8 @@ export default function Home() {
                 gap: "10px",
               }}>
                 {[
-                  { id: "pretty", icon: "✨", label: "Pretty", color: "#667eea" },
-                  { id: "hot", icon: "🔥", label: "Hot", color: "#f093fb" },
+                  { id: "pretty", icon: "", label: "Pretty", color: "#667eea" },
+                  { id: "hot", icon: "", label: "Hot", color: "#f093fb" },
                 ].map((mode) => (
                   <button
                     key={mode.id}
@@ -700,7 +702,7 @@ export default function Home() {
                 letterSpacing: "1px",
                 marginBottom: "12px",
               }}>
-                🤖 Модель AI
+                Модель AI
               </h3>
               <div style={{
                 display: "grid",
@@ -708,8 +710,8 @@ export default function Home() {
                 gap: "10px",
               }}>
                 {[
-                  { id: "bytedance", icon: "🎨", label: "ByteDance", desc: "Быстро" },
-                  { id: "nanobana", icon: "🚀", label: "NanoBana", desc: "Качество+" },
+                  { id: "bytedance", icon: "", label: "ByteDance", desc: "Быстро" },
+                  { id: "nanobana", icon: "", label: "NanoBana", desc: "Качество+" },
                 ].map((m) => (
                   <button
                     key={m.id}
@@ -790,7 +792,7 @@ export default function Home() {
                 letterSpacing: "1px",
                 marginBottom: "12px",
               }}>
-                📸 Загрузить фото
+                Загрузить фото
               </h3>
               <label style={{
                 display: "block",
