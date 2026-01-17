@@ -26,6 +26,17 @@ export default function Home() {
   const [model, setModel] = useState<"bytedance" | "nanobana">("bytedance");
   const [unAuthGenerations, setUnAuthGenerations] = useState(0); // Для неавторизованных
   const [showAuthModal, setShowAuthModal] = useState(false); // Модаль регистрации
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Проверить размер экрана
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Проверить авторизацию при загрузке
   useEffect(() => {
@@ -293,20 +304,20 @@ export default function Home() {
       margin: "0 auto",
       background: "rgba(255, 255, 255, 0.98)",
       borderRadius: "24px",
-      padding: window.innerWidth <= 768 ? "20px" : "48px",
+      padding: isMobile ? "20px" : "48px",
       boxShadow: "0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5)",
       backdropFilter: "blur(20px)",
       border: "1px solid rgba(255, 255, 255, 0.3)",
     } as React.CSSProperties,
     header: {
       display: "flex",
-      flexDirection: window.innerWidth <= 768 ? "column" as const : "row" as const,
+      flexDirection: isMobile ? "column" as const : "row" as const,
       justifyContent: "space-between",
-      alignItems: window.innerWidth <= 768 ? "flex-start" : "center",
-      marginBottom: window.innerWidth <= 768 ? "24px" : "40px",
+      alignItems: isMobile ? "flex-start" : "center",
+      marginBottom: isMobile ? "24px" : "40px",
       borderBottom: "2px solid #f0f0f0",
-      paddingBottom: window.innerWidth <= 768 ? "16px" : "20px",
-      gap: window.innerWidth <= 768 ? "12px" : "0",
+      paddingBottom: isMobile ? "16px" : "20px",
+      gap: isMobile ? "12px" : "0",
     } as React.CSSProperties,
     userInfo: {
       fontSize: "14px",
@@ -320,7 +331,7 @@ export default function Home() {
       marginBottom: "8px",
     } as React.CSSProperties,
     title: {
-      fontSize: window.innerWidth <= 768 ? "28px" : "48px",
+      fontSize: isMobile ? "28px" : "48px",
       fontWeight: "900",
       color: "#1a1a2e",
       margin: "0",
@@ -329,7 +340,7 @@ export default function Home() {
       WebkitTextFillColor: "transparent",
       backgroundClip: "text",
       fontFamily: "var(--font-space-grotesk, sans-serif)",
-      letterSpacing: window.innerWidth <= 768 ? "-1px" : "-2px",
+      letterSpacing: isMobile ? "-1px" : "-2px",
       lineHeight: "1.2",
     } as React.CSSProperties,
     subtitle: {
