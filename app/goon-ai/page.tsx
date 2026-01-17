@@ -165,6 +165,19 @@ export default function GoonAI() {
       if (data.imageUrl) {
         setResult(data.imageUrl);
       }
+
+      // Обновить баланс пользователя после генерации
+      if (user?.id) {
+        const { data: updatedUser } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        if (updatedUser) {
+          setUserData(updatedUser);
+        }
+      }
     } catch (err: unknown) {
       console.error("Ошибка:", err);
       setError("Ошибка при отправке запроса");
