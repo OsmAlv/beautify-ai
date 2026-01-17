@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const WAVESPEED_API_KEY = process.env.WAVESPEED_API_KEY;
-const WAVESPEED_API_URL = "https://api.wavespeed.ai/api/v3/bytedance/seedream-v4/edit";
+const WAVESPEED_BYTEDANCE_URL = "https://api.wavespeed.ai/api/v3/bytedance/seedream-v4/edit";
+const WAVESPEED_NANOBANA_URL = "https://api.wavespeed.ai/api/v3/google/nano-banana-pro/edit"; // NanoBana модель через Wavespeed
 const WAVESPEED_RESULT_URL = "https://api.wavespeed.ai/api/v3/predictions";
 
 async function waitForResult(requestId: string, maxAttempts = 120) {
@@ -40,7 +41,7 @@ async function waitForResult(requestId: string, maxAttempts = 120) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { imageUrl, intensity = "pretty", environment = "original", userId } = await request.json();
+    const { imageUrl, intensity = "pretty", environment = "original", userId, model = "bytedance" } = await request.json();
 
     // Проверка лимитов если не суперюзер
     if (userId) {
@@ -67,42 +68,71 @@ export async function POST(request: NextRequest) {
     console.log("🔑 API ключ загружен, длина:", WAVESPEED_API_KEY.length);
     console.log("🌡️ Интенсивность:", intensity);
     console.log("🌍 Окружение:", environment);
-    console.log("📤 Отправляем на Wavespeed API...");
+    console.log("🤖 Модель:", model);
+    console.log("📤 Отправляем на API...");
 
-    // Описания мест с разной одеждой
-    const environmentDescriptions = {
-      original: "в исходном окружении (не меняй фон), но с улучшенным внешним видом. Убери любые предметы из рук и с шеи.",
-      home: "в уютной домашней обстановке в откровенной домашней одежде - открытый халат или короткая сексуальная пижама. Убери любые предметы из рук и с шеи.",
-      bathtub: "в красивой эстетичной ванной комнате в откровенном сексуальном нижнем белье. IMPORTANT: человек не должен находитсья в самой ванне или душевой кабинке. Убери любые предметы из рук и с шеи. Так как девушка в нижнем белье подчерни соски но их не должно быть видно только форма и очень аккуратно, они должны быть под бельем. ",
-      bedroom: "в спальне на кровати в откровенном сексуальном нижнем белье, частично раздетой. Убери любые предметы из рук и с шеи.",
-      office: "в офисе в откровенной сексуальной деловой одежде - распахнутая рубашка или облегающее платье - откровенный наряд. Убери любые предметы из рук и с шеи.",
-    };
+    // Получить промпт из БД
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
-    // Описания мест для Salsa (гораздо откровеннее)
-    const salsaEnvironmentDescriptions = {
-      original: "в исходном окружении (не меняй фон), но полностью обнаженной.",
-      home: "в спальне дома, полностью обнаженной, в сексуальной позе.",
-      bathtub: "в ванной комнате в ванне, полностью обнаженной, показывая тело.",
-      bedroom: "в спальне на кровати, полностью обнаженной, в соблазнительной позе.",
-      office: "в офисе, полностью обнаженной, в сексуальной позе, показывая свое идеальное тело.",
-    };
+    const { data: promptData, error: promptError } = await supabase
+      .from("prompts")
+      .select("prompt_text")
+      .eq("model", model)
+      .eq("intensity", intensity)
+      .eq("environment", intensity === "hot" ? (environment || "original") : null)
+      .single();
 
-    const envDesc = environmentDescriptions[environment as keyof typeof environmentDescriptions] || environmentDescriptions.home;
-    const salsaEnvDesc = salsaEnvironmentDescriptions[environment as keyof typeof salsaEnvironmentDescriptions] || salsaEnvironmentDescriptions.home;
+    if (promptError || !promptData) {
+      console.warn("⚠️ Промпт не найден в БД, используем дефолтный");
+    }
 
-    // Разные промпты для разных интенсивностей
-    const prompts = {
-      pretty: "Make this woman naturally more beautiful. Preserve all skin texture details, natural freckles, beauty marks and skin imperfections - keep them visible. Enhance skin tone subtly, brighten eyes gently, add subtle glow. Keep her natural facial features and expressions. Skin must look like real human skin, not plastic or overly smooth.Keep body proportions Maintain original outfit. Remove any objects from hands and neck. Shot like iPhone 17 Pro Max. Photorealistic, natural, living appearance.",
-      hot: environment === "original" 
-        ? "Transform this woman into a stunningly attractive version of herself. Keep original background. IMPORTANT: Make it look like ONE unified professional photo shot on iPhone 17 Pro Max - blend seamlessly. Preserve skin texture, natural marks, freckles and minor imperfections - enhance beauty while keeping skin realistic and living, NOT plastic. Keep body proportions, enhanced features but natural looking. Keep face expressions and personality. Remove any objects from hands and neck. Photorealistic result with natural human skin texture. make this woman sexy, work with outfit to show tits and mark body lines "
-        : `Transform this woman into a stunningly attractive version of herself ${envDesc}. IMPORTANT: Make it look like ONE unified professional photo shot on iPhone 17 Pro Max - blend person and background seamlessly, NOT separate elements. Preserve skin texture, natural marks, freckles and minor imperfections - enhance beauty while keeping skin realistic and living, Keep body proportions NOT plastic. , enhanced features but natural looking. Keep face expressions and personality. Photorealistic result with natural human skin texture.`,
-      salsa: `Transform this woman into an extremely sexy, stunningly beautiful fully naked version ${salsaEnvDesc}. skin texture with natural freckles and beauty marks - skin must look incredibly realistic and photorealistic like iPhone 17 Pro Max photography. Perfect enhanced body curves and proportions, beautifully toned and feminine. Perfect face and natural expression. Remove any objects from hands. IMPORTANT: Make it look like ONE unified professional photo shot on iPhone 17 Pro Max - blend person and background seamlessly, soft skin tones. dont forget nipples make it phisicaly right on the place where they should be  `
-    };
+    let prompt: string;
+    if (promptData?.prompt_text) {
+      prompt = promptData.prompt_text;
+      console.log("📖 Промпт загружен из БД");
+    } else {
+      // Fallback на встроенные промпты
+      const getPrompts = (modelType: string) => {
+        if (modelType === "nanobana") {
+          return {
+            pretty: "Enhance this woman to make her stunningly naturally beautiful. Use advanced neural upscaling. Preserve all authentic skin texture, micro-details, freckles and natural imperfections. Subtly brighten eyes, enhance skin tone naturally, add soft luminous glow. Maintain original facial features, expressions and body proportions. Keep outfit intact. Premium iPhone 17 Pro Max photography. Ultra photorealistic with living, breathing human skin texture. No plastic look.",
+            hot: "Transform this woman into an absolutely stunning, enhanced version using advanced AI upscaling.",
+          };
+        } else {
+          return {
+            pretty: "Make this woman naturally more beautiful.",
+            hot: "Transform this woman into a stunningly attractive version of herself.",
+          };
+        }
+      };
 
-    const prompt = prompts[intensity as keyof typeof prompts] || prompts.pretty;
+      const prompts = getPrompts(model);
+      prompt = prompts[intensity as keyof typeof prompts] || prompts.pretty;
+      console.log("📖 Используется встроенный дефолтный промпт");
+    }
 
-    // Отправляем запрос к Wavespeed API
-    const editResponse = await fetch(WAVESPEED_API_URL, {
+
+    // Выбираем API в зависимости от модели
+    let apiUrl: string;
+    let requestIdFromResponse: string | null = null;
+    let resultImageUrl: string | null = null;
+
+    if (model === "nanobana") {
+      // NanoBana модель через Wavespeed API
+      apiUrl = WAVESPEED_NANOBANA_URL;
+      console.log("🚀 Используем NanoBana модель (Wavespeed)");
+    } else {
+      // ByteDance модель (текущий)
+      apiUrl = WAVESPEED_BYTEDANCE_URL;
+      console.log("🎨 Используем ByteDance модель (Wavespeed)");
+    }
+
+    // Отправляем запрос к Wavespeed API (для обеих моделей)
+    const editResponse = await fetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -129,25 +159,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const requestId = editData.data?.id;
-    console.log("✅ Получен requestId:", requestId);
+    requestIdFromResponse = editData.data?.id;
+    console.log("✅ Получен requestId:", requestIdFromResponse);
     
-    if (!requestId) {
+    if (!requestIdFromResponse) {
       return NextResponse.json(
         { error: "Не удалось получить ID запроса" },
         { status: 400 }
       );
     }
     
-    const result = await waitForResult(requestId);
+    const result = await waitForResult(requestIdFromResponse);
     
     console.log("🎉 Финальный результат получен:");
     console.log("Весь объект result:", JSON.stringify(result, null, 2));
 
     // Извлекаем URL из массива outputs
-    const resultImageUrl = result.outputs?.[0];
-    
-    console.log("Найденный imageUrl:", resultImageUrl);
+    resultImageUrl = result.outputs?.[0];
 
     // ✅ Сохраняем в БД с image_url (временно, пока не обновлена таблица на Wavespeed fetch)
     if (userId && resultImageUrl) {

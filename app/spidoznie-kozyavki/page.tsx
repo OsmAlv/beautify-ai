@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
 interface UserData {
@@ -11,6 +11,16 @@ interface UserData {
   nippies_balance: number;
   pretty_generations_remaining: number;
   hot_generations_remaining: number;
+}
+
+interface Prompt {
+  id: number;
+  model: string;
+  intensity: string;
+  environment: string | null;
+  prompt_text: string;
+  created_at: string;
+  updated_at: string;
 }
 
 const ADMIN_EMAIL = "osmanovalev33@gmail.com";
@@ -32,6 +42,11 @@ export default function AdminSecret() {
     nippies: "100",
   });
 
+  const [prompts, setPrompts] = useState<Prompt[]>([]);
+  const [loadingPrompts, setLoadingPrompts] = useState(false);
+  const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
+  const [promptFilter, setPromptFilter] = useState({ model: "bytedance", intensity: "pretty" });
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -42,6 +57,7 @@ export default function AdminSecret() {
       setEmail("");
       setPassword("");
       await loadUsers();
+      await loadPrompts();
     } else {
       setError("❌ Неверный логин или пароль");
     }
@@ -127,6 +143,56 @@ export default function AdminSecret() {
     } catch (err) {
       console.error("Error:", err);
       setError("Ошибка при добавлении nippies");
+    }
+  };
+
+  const loadPrompts = async () => {
+    try {
+      setLoadingPrompts(true);
+      const response = await fetch("/api/admin/prompts");
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.error);
+      setPrompts(data.prompts || []);
+    } catch (err) {
+      console.error("Error loading prompts:", err);
+      setError("Ошибка при загрузке промптов");
+    } finally {
+      setLoadingPrompts(false);
+    }
+  };
+
+  const handleSavePrompt = async () => {
+    if (!editingPrompt) return;
+
+    try {
+      setError(null);
+      setSuccessMessage(null);
+
+      const response = await fetch("/api/admin/prompts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update-prompt",
+          model: editingPrompt.model,
+          intensity: editingPrompt.intensity,
+          environment: editingPrompt.environment,
+          prompt_text: editingPrompt.prompt_text,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || "Ошибка");
+        return;
+      }
+
+      setSuccessMessage("✅ Промпт успешно обновлен!");
+      setEditingPrompt(null);
+      await loadPrompts();
+    } catch (err) {
+      console.error("Error:", err);
+      setError("Ошибка при сохранении промпта");
     }
   };
 
@@ -247,6 +313,37 @@ export default function AdminSecret() {
       borderRadius: "5px",
       cursor: "pointer",
     } as React.CSSProperties,
+    textarea: {
+      padding: "12px",
+      border: "1px solid #ddd",
+      borderRadius: "5px",
+      fontSize: "13px",
+      fontFamily: "monospace",
+      minHeight: "150px",
+      resize: "vertical" as const,
+    } as React.CSSProperties,
+    modal: {
+      position: "fixed" as const,
+      top: "0",
+      left: "0",
+      right: "0",
+      bottom: "0",
+      background: "rgba(0, 0, 0, 0.5)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 1000,
+    } as React.CSSProperties,
+    modalContent: {
+      background: "white",
+      padding: "30px",
+      borderRadius: "10px",
+      maxWidth: "800px",
+      width: "90%",
+      maxHeight: "80vh",
+      overflow: "auto",
+      boxShadow: "0 10px 40px rgba(0, 0, 0, 0.3)",
+    } as React.CSSProperties,
   };
 
   // Форма входа
@@ -344,6 +441,114 @@ export default function AdminSecret() {
             </form>
           </div>
         </div>
+
+        {/* Редактирование промптов */}
+        <div style={styles.section}>
+          <h2 style={styles.sectionTitle}>🤖 Редактирование промптов</h2>
+          <div style={styles.formSection}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "10px", marginBottom: "15px" }}>
+              <select
+                value={promptFilter.model}
+                onChange={(e) => setPromptFilter({ ...promptFilter, model: e.target.value })}
+                style={styles.input}
+              >
+                <option value="bytedance">ByteDance</option>
+                <option value="nanobana">NanoBana</option>
+                <option value="salsa">Salsa</option>
+              </select>
+              <select
+                value={promptFilter.intensity}
+                onChange={(e) => setPromptFilter({ ...promptFilter, intensity: e.target.value })}
+                style={styles.input}
+              >
+                <option value="pretty">Pretty</option>
+                <option value="hot">Hot</option>
+                <option value="salsa">Salsa</option>
+              </select>
+              <button style={styles.button}>🔍 Фильтр</button>
+            </div>
+
+            {loadingPrompts ? (
+              <p>⏳ Загрузка промптов...</p>
+            ) : (
+              <div style={{ display: "grid", gap: "10px", maxHeight: "400px", overflowY: "auto" }}>
+                {prompts
+                  .filter(
+                    (p) =>
+                      p.model === promptFilter.model &&
+                      p.intensity === promptFilter.intensity
+                  )
+                  .map((prompt) => (
+                    <div
+                      key={prompt.id}
+                      style={{
+                        padding: "12px",
+                        border: "1px solid #ddd",
+                        borderRadius: "8px",
+                        background: "#f9f9f9",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div>
+                        <strong>
+                          {prompt.model.toUpperCase()} - {prompt.intensity.toUpperCase()}
+                        </strong>
+                        {prompt.environment && (
+                          <span style={{ marginLeft: "10px", color: "#666" }}>
+                            ({prompt.environment})
+                          </span>
+                        )}
+                        <p style={{ margin: "5px 0 0 0", color: "#666", fontSize: "12px" }}>
+                          {prompt.prompt_text.substring(0, 100)}...
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setEditingPrompt(prompt)}
+                        style={{ ...styles.smallButton, background: "#667eea" }}
+                      >
+                        ✏️ Редактировать
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Модаль редактирования */}
+        {editingPrompt && (
+          <div style={styles.modal}>
+            <div style={styles.modalContent}>
+              <h3 style={{ marginTop: "0" }}>
+                Редактирование: {editingPrompt.model.toUpperCase()} - {editingPrompt.intensity.toUpperCase()}
+                {editingPrompt.environment && ` (${editingPrompt.environment})`}
+              </h3>
+              <textarea
+                value={editingPrompt.prompt_text}
+                onChange={(e) =>
+                  setEditingPrompt({ ...editingPrompt, prompt_text: e.target.value })
+                }
+                style={styles.textarea}
+              />
+              <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
+                <button
+                  onClick={handleSavePrompt}
+                  style={{ ...styles.button, flex: 1 }}
+                >
+                  💾 Сохранить
+                </button>
+                <button
+                  onClick={() => setEditingPrompt(null)}
+                  style={{ ...styles.button, background: "#e74c3c", flex: 1 }}
+                >
+                  ❌ Отмена
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Таблица пользователей */}
         <div style={styles.section}>

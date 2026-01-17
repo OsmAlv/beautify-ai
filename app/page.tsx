@@ -21,8 +21,9 @@ export default function Home() {
   const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [intensity, setIntensity] = useState<"pretty" | "hot" | "salsa">("pretty");
+  const [intensity, setIntensity] = useState<"pretty" | "hot">("pretty");
   const [environment, setEnvironment] = useState<"original" | "home" | "bathtub" | "bedroom" | "office">("original");
+  const [model, setModel] = useState<"bytedance" | "nanobana">("bytedance");
   const [unAuthGenerations, setUnAuthGenerations] = useState(0); // Для неавторизованных
   const [showAuthModal, setShowAuthModal] = useState(false); // Модаль регистрации
 
@@ -188,10 +189,6 @@ export default function Home() {
         setError("❌ Недостаточно nippies для Hot режима (нужно 37)");
         return;
       }
-      if (intensity === "salsa" && userData.nippies_balance < 50) {
-        setError("❌ Недостаточно nippies для Salsa режима (нужно 50)");
-        return;
-      }
     }
 
     setLoading(true);
@@ -205,6 +202,7 @@ export default function Home() {
           imageUrl: image,
           intensity,
           environment,
+          model,
           userId: user?.id,
         }),
       });
@@ -527,6 +525,23 @@ export default function Home() {
                   {userData.username}
                 </div>
                 <div style={{ marginTop: "8px", display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                  <a href="/goon-ai" style={{ textDecoration: "none" }}>
+                    <button style={{
+                      padding: "6px 12px",
+                      background: "linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%)",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      transition: "transform 0.2s",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}>
+                      🌶 Goon AI
+                    </button>
+                  </a>
                   <a href="/profile" style={{ textDecoration: "none" }}>
                     <button style={{
                       padding: "6px 12px",
@@ -660,11 +675,10 @@ export default function Home() {
                 {[
                   { id: "pretty", icon: "✨", label: "Pretty", color: "#667eea" },
                   { id: "hot", icon: "🔥", label: "Hot", color: "#f093fb" },
-                  { id: "salsa", icon: "🌶", label: "Salsa", color: "#ff6b6b" },
                 ].map((mode) => (
                   <button
                     key={mode.id}
-                    onClick={() => setIntensity(mode.id as "pretty" | "hot" | "salsa")}
+                    onClick={() => setIntensity(mode.id as "pretty" | "hot")}
                     disabled={mode.id !== "pretty" && !userData}
                     style={{
                       padding: "16px",
@@ -684,8 +698,52 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Model Selection */}
+            <div style={{ marginBottom: "28px" }}>
+              <h3 style={{
+                fontSize: "13px",
+                fontWeight: "700",
+                color: "#1a1a2e",
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+                marginBottom: "12px",
+              }}>
+                🤖 Модель AI
+              </h3>
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "10px",
+              }}>
+                {[
+                  { id: "bytedance", icon: "🎨", label: "ByteDance", desc: "Быстро" },
+                  { id: "nanobana", icon: "🚀", label: "NanoBana", desc: "Качество+" },
+                ].map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => setModel(m.id as "bytedance" | "nanobana")}
+                    style={{
+                      padding: "16px",
+                      border: model === m.id ? "2px solid #667eea" : "2px solid #e0e0e0",
+                      background: model === m.id ? "#f0f3ff" : "white",
+                      borderRadius: "10px",
+                      cursor: "pointer",
+                      fontSize: "13px",
+                      fontWeight: "700",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    {m.icon} {m.label}
+                    <div style={{ fontSize: "11px", fontWeight: "400", marginTop: "4px", opacity: 0.7 }}>
+                      {m.desc}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Environment Selection */}
-            {(intensity === "hot" || intensity === "salsa") && (
+            {intensity === "hot" && (
               <div style={{ marginBottom: "28px" }}>
                 <h3 style={{
                   fontSize: "13px",
