@@ -126,19 +126,7 @@ export default function GoonAI() {
       return;
     }
 
-    // Проверить авторизацию
-    if (!user) {
-      setError("❌ Нужна авторизация для этого режима");
-      return;
-    }
-
-    // Проверить баланс nippies
-    if (user && userData && !userData.is_superuser) {
-      if (userData.nippies_balance < 50) {
-        setError("❌ Недостаточно nippies для Salsa режима (нужно 50)");
-        return;
-      }
-    }
+    // Goon AI доступен всем - без проверок авторизации и баланса
 
     setLoading(true);
     setError(null);

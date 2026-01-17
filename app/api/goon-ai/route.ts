@@ -37,25 +37,8 @@ export async function POST(request: NextRequest) {
   try {
     const { imageUrl, environment = "original", userId } = await request.json();
 
-    // Salsa режим ВСЕГДА требует авторизации
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Режим Salsa требует авторизации" },
-        { status: 401 }
-      );
-    }
-
-    // Проверка лимитов и списание nippies
-    const checkResponse = await fetch(new URL("/api/check-access", request.url).toString(), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, mode: "salsa", environment }),
-    });
-
-    if (!checkResponse.ok) {
-      const error = await checkResponse.json();
-      return NextResponse.json(error, { status: checkResponse.status });
-    }
+    // Goon AI доступен всем без авторизации и бесплатно
+    console.log("🌶 Goon AI - открытый режим для всех пользователей");
 
     if (!WAVESPEED_API_KEY) {
       console.error("❌ API ключ не найден");
