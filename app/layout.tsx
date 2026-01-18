@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Poppins, Space_Grotesk } from "next/font/google";
+import { Poppins, Space_Grotesk, Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import "./mobile.css";
 
@@ -13,6 +13,18 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -32,7 +44,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className={`${poppins.variable} ${spaceGrotesk.variable}`} style={{ fontFamily: "var(--font-poppins)" }}>
+      <body className={`${poppins.variable} ${spaceGrotesk.variable} ${playfair.variable} ${inter.variable}`} style={{ fontFamily: "var(--font-inter)" }}>
         {children}
       </body>
     </html>

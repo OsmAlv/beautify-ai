@@ -20,12 +20,12 @@
 1. Открой https://vercel.com
 2. Найди проект **beautify-ai**
 3. Перейди в **Settings** → **Environment Variables**
-4. Добавь эти переменные:
+4. Добавь эти переменные из вашего .env.local:
    ```
-   NEXT_PUBLIC_SUPABASE_URL = https://fuqzkrsmeehyuhnrpwdf.supabase.co
-   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY = sb_publishable_i0rpwC4PXKiWSy1qYVSGlA_AlZRJzVo
-   SUPABASE_SERVICE_ROLE_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1cXprcnNtZWVoeXVobnJwd2RmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2ODQwMzY0MSwiZXhwIjoyMDgzOTc5NjQxfQ.ITrNuv8hdKarAAz601xOwqy6A_7DlelMaOaduZtylAs
-   WAVESPEED_API_KEY = 9d2320d5ed3ebefc09136bfd10e56ac76ac55b37af28c25a1311dcc3e9e38e9a
+   NEXT_PUBLIC_SUPABASE_URL = [из .env.local]
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY = [из .env.local]
+   SUPABASE_SERVICE_ROLE_KEY = [из .env.local]
+   WAVESPEED_API_KEY = [из .env.local]
    ```
 5. После добавления нажми **Redeploy** в Deployments
 6. Жди 2-3 минуты пока перестроится
@@ -66,10 +66,10 @@ Settings → Environment Variables
 
 | Переменная | Значение |
 |-----------|----------|
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://fuqzkrsmeehyuhnrpwdf.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY` | `sb_publishable_i0rpwC4PXKiWSy1qYVSGlA_AlZRJzVo` |
-| `SUPABASE_SERVICE_ROLE_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1cXprcnNtZWVoeXVobnJwd2RmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2ODQwMzY0MSwiZXhwIjoyMDgzOTc5NjQxfQ.ITrNuv8hdKarAAz601xOwqy6A_7DlelMaOaduZtylAs` |
-| `WAVESPEED_API_KEY` | `9d2320d5ed3ebefc09136bfd10e56ac76ac55b37af28c25a1311dcc3e9e38e9a` |
+| `NEXT_PUBLIC_SUPABASE_URL` | `[из вашего .env.local]` |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY` | `[из вашего .env.local]` |
+| `SUPABASE_SERVICE_ROLE_KEY` | `[из вашего .env.local]` |
+| `WAVESPEED_API_KEY` | `[из вашего .env.local]` |
 
 ### Шаг 5: Redeploy
 Перейди в **Deployments** → нажми **•••** на последнем деплое → **Redeploy**

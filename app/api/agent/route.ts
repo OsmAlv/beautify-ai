@@ -15,7 +15,7 @@ async function waitForResult(requestId: string, maxAttempts = 120) {
 
     const data = await response.json();
     
-    // Статус находится в data.data.status
+    // Статус находится в dat a.data.status
     const status = data.data?.status;
 
     console.log(`⏳ Попытка ${i + 1}/${maxAttempts}: статус = ${status}`);

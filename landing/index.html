@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Сервис Красоты — Beautify.AI</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Фоновые декоративные элементы -->
+    <div class="bg-decoration bg-blob-1"></div>
+    <div class="bg-decoration bg-blob-2"></div>
+    <div class="bg-decoration bg-blob-3"></div>
+
+    <!-- Шапка с логотипом -->
+    <header class="header">
+        <div class="logo">BEAUTIFY.AI</div>
+        <nav class="nav">
+            <a href="#" class="nav-link">Главная</a>
+        </nav>
+    </header>
+
+    <!-- Основной контейнер -->
+    <main class="main-container">
+        <!-- Левая колонка: Фотография с каруселью -->
+        <div class="photo-section">
+            <div class="photo-card">
+                <!-- Карусель фотографий -->
+                <div class="carousel">
+                    <img src="img/1.jpg" alt="AI Beauty Result 1" class="carousel-image active">
+                    <img src="img/2.jpg" alt="AI Beauty Result 2" class="carousel-image">
+                    <img src="img/3.jpg" alt="AI Beauty Result 3" class="carousel-image">
+                    <img src="img/4.jpg" alt="AI Beauty Result 4" class="carousel-image">
+                </div>
+                <!-- Индикаторы -->
+                <div class="carousel-dots">
+                    <span class="dot active" data-index="0"></span>
+                    <span class="dot" data-index="1"></span>
+                    <span class="dot" data-index="2"></span>
+                    <span class="dot" data-index="3"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка: Текст и кнопки -->
+        <div class="content-section">
+            <h1 class="main-title">
+                Привет! Я —<br>
+                AI-сервис красоты.
+            </h1>
+            <p class="main-description">
+                Мы подчёркиваем твою естественную красоту<br>
+                с помощью искусственного интеллекта.
+            </p>
+
+            <!-- Кнопки -->
+            <div class="buttons-group">
+                <button class="btn btn-primary" onclick="window.location.href='/photoshoot'">
+                    ПОПРОБОВАТЬ
+                </button>
+                <button class="btn btn-outline" onclick="window.location.href='/profile'">
+                    ПРИМЕРЫ
+                </button>
+                <button class="btn btn-outline" onclick="window.location.href='/auth'">
+                    ТАРИФЫ
+                </button>
+                <button class="btn btn-outline" onclick="window.location.href='#contact'">
+                    КОНТАКТЫ
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

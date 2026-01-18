@@ -166,92 +166,129 @@ export default function AuthPage() {
     }
   }
 
-  const styles = {
-    main: {
+  return (
+    <div style={{
       minHeight: "100vh",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      background: "linear-gradient(135deg, #FFE5E5 0%, #FFD4E5 25%, #FFF0F5 50%, #E0F4FF 75%, #F0E5FF 100%)",
       padding: "20px",
-    } as React.CSSProperties,
-    container: {
-      background: "white",
-      padding: "40px",
-      borderRadius: "15px",
-      boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
-      width: "100%",
-      maxWidth: "400px",
-    } as React.CSSProperties,
-    title: {
-      textAlign: "center" as const,
-      marginBottom: "30px",
-      fontSize: "28px",
-      fontWeight: "bold",
-      color: "#333",
-    },
-    input: {
-      width: "100%",
-      padding: "12px",
-      marginBottom: "15px",
-      border: "1px solid #ddd",
-      borderRadius: "8px",
-      fontSize: "14px",
-      boxSizing: "border-box" as const,
-    },
-    button: {
-      width: "100%",
-      padding: "12px",
-      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      color: "white",
-      border: "none",
-      borderRadius: "8px",
-      cursor: "pointer",
-      fontSize: "16px",
-      fontWeight: "bold",
-      marginTop: "10px",
-    },
-    toggleButton: {
-      width: "100%",
-      padding: "12px",
-      background: "#f0f0f0",
-      color: "#333",
-      border: "none",
-      borderRadius: "8px",
-      cursor: "pointer",
-      fontSize: "14px",
-      marginTop: "15px",
-    },
-    error: {
-      color: "#e74c3c",
-      marginBottom: "15px",
-      padding: "10px",
-      background: "#fadbd8",
-      borderRadius: "5px",
-    },
-    success: {
-      color: "#27ae60",
-      marginBottom: "15px",
-      padding: "10px",
-      background: "#d5f4e6",
-      borderRadius: "5px",
-    },
-  };
+      position: "relative",
+      overflow: "hidden",
+    }}>
+      {/* Decorative Blobs */}
+      <div style={{
+        position: "fixed",
+        width: "600px",
+        height: "600px",
+        background: "radial-gradient(circle, #FFB3BA 0%, #FFDFBA 100%)",
+        borderRadius: "50%",
+        filter: "blur(120px)",
+        opacity: 0.4,
+        top: "-200px",
+        left: "-200px",
+        pointerEvents: "none",
+        zIndex: 0,
+      }} />
+      
+      <div style={{
+        position: "fixed",
+        width: "500px",
+        height: "500px",
+        background: "radial-gradient(circle, #BAE1FF 0%, #BAFFC9 100%)",
+        borderRadius: "50%",
+        filter: "blur(120px)",
+        opacity: 0.4,
+        bottom: "-150px",
+        right: "-150px",
+        pointerEvents: "none",
+        zIndex: 0,
+      }} />
 
-  return (
-    <main style={styles.main}>
-      <div style={styles.container}>
-        <h1 style={styles.title}> Beautify.AI</h1>
+      {/* Auth Card */}
+      <div style={{
+        position: "relative",
+        zIndex: 10,
+        background: "rgba(255, 255, 255, 0.25)",
+        backdropFilter: "blur(20px) saturate(180%)",
+        WebkitBackdropFilter: "blur(20px) saturate(180%)",
+        padding: "50px 40px",
+        borderRadius: "24px",
+        border: "1px solid rgba(255, 255, 255, 0.5)",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.3) inset",
+        width: "100%",
+        maxWidth: "420px",
+      }}>
+        <h1 style={{
+          textAlign: "center",
+          marginBottom: "35px",
+          fontSize: "48px",
+          fontFamily: "'Playfair Display', serif",
+          fontWeight: 700,
+          color: "#1A1A1A",
+          letterSpacing: "-0.5px",
+        }}>
+          Beautify.AI
+        </h1>
 
-        {error && <p style={styles.error}>{error}</p>}
-        {success && <p style={styles.success}>{success}</p>}
+        {error && (
+          <div style={{
+            color: "#d32f2f",
+            marginBottom: "20px",
+            padding: "14px 18px",
+            background: "rgba(255, 205, 210, 0.5)",
+            backdropFilter: "blur(10px)",
+            borderRadius: "12px",
+            fontSize: "14px",
+            border: "1px solid rgba(211, 47, 47, 0.2)",
+          }}>
+            {error}
+          </div>
+        )}
+        
+        {success && (
+          <div style={{
+            color: "#2e7d32",
+            marginBottom: "20px",
+            padding: "14px 18px",
+            background: "rgba(200, 230, 201, 0.5)",
+            backdropFilter: "blur(10px)",
+            borderRadius: "12px",
+            fontSize: "14px",
+            border: "1px solid rgba(46, 125, 50, 0.2)",
+          }}>
+            {success}
+          </div>
+        )}
 
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          style={styles.input}
+          style={{
+            width: "100%",
+            padding: "16px 20px",
+            marginBottom: "16px",
+            border: "2px solid rgba(26, 26, 26, 0.1)",
+            borderRadius: "16px",
+            fontSize: "15px",
+            background: "rgba(255, 255, 255, 0.6)",
+            backdropFilter: "blur(10px)",
+            color: "#1A1A1A",
+            boxSizing: "border-box",
+            fontFamily: "'Inter', sans-serif",
+            transition: "all 0.3s ease",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.border = "2px solid rgba(26, 26, 26, 0.3)";
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.8)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.border = "2px solid rgba(26, 26, 26, 0.1)";
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.6)";
+          }}
         />
 
         <input
@@ -259,7 +296,28 @@ export default function AuthPage() {
           placeholder="Пароль"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={styles.input}
+          style={{
+            width: "100%",
+            padding: "16px 20px",
+            marginBottom: "16px",
+            border: "2px solid rgba(26, 26, 26, 0.1)",
+            borderRadius: "16px",
+            fontSize: "15px",
+            background: "rgba(255, 255, 255, 0.6)",
+            backdropFilter: "blur(10px)",
+            color: "#1A1A1A",
+            boxSizing: "border-box",
+            fontFamily: "'Inter', sans-serif",
+            transition: "all 0.3s ease",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.border = "2px solid rgba(26, 26, 26, 0.3)";
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.8)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.border = "2px solid rgba(26, 26, 26, 0.1)";
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.6)";
+          }}
         />
 
         {isSignUp && (
@@ -268,31 +326,73 @@ export default function AuthPage() {
             placeholder="Имя пользователя"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            style={styles.input}
+            style={{
+              width: "100%",
+              padding: "16px 20px",
+              marginBottom: "16px",
+              border: "2px solid rgba(26, 26, 26, 0.1)",
+              borderRadius: "16px",
+              fontSize: "15px",
+              background: "rgba(255, 255, 255, 0.6)",
+              backdropFilter: "blur(10px)",
+              color: "#1A1A1A",
+              boxSizing: "border-box",
+              fontFamily: "'Inter', sans-serif",
+              transition: "all 0.3s ease",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.border = "2px solid rgba(26, 26, 26, 0.3)";
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.8)";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.border = "2px solid rgba(26, 26, 26, 0.1)";
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.6)";
+            }}
           />
         )}
 
         <button
           onClick={handleAuth}
           disabled={loading}
+          className="liquid-glass-btn-dark"
           style={{
-            ...styles.button,
-            opacity: loading ? 0.5 : 1,
+            width: "100%",
+            padding: "16px",
+            color: "white",
+            border: "none",
+            borderRadius: "50px",
             cursor: loading ? "not-allowed" : "pointer",
+            fontSize: "14px",
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "1.5px",
+            marginTop: "8px",
+            fontFamily: "'Inter', sans-serif",
+            opacity: loading ? 0.5 : 1,
           }}
         >
-          {loading ? "⏳ Загрузка..." : isSignUp ? "📝 Регистрация" : "🔐 Вход"}
+          {loading ? "⏳ Загрузка..." : isSignUp ? "📝 Вход" : "🔐 Вход"}
         </button>
 
         <button
           onClick={handleGoogleSignIn}
           disabled={loading}
+          className="liquid-glass-btn-dark"
           style={{
-            ...styles.button,
-            background: "#4285F4",
-            marginTop: "10px",
-            opacity: loading ? 0.5 : 1,
+            width: "100%",
+            padding: "16px",
+            background: loading ? "rgba(66, 133, 244, 0.5)" : "linear-gradient(135deg, rgba(66, 133, 244, 0.95) 0%, rgba(66, 133, 244, 0.85) 50%, rgba(66, 133, 244, 0.9) 100%)",
+            color: "white",
+            border: "none",
+            borderRadius: "50px",
             cursor: loading ? "not-allowed" : "pointer",
+            fontSize: "14px",
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "1.5px",
+            marginTop: "12px",
+            fontFamily: "'Inter', sans-serif",
+            opacity: loading ? 0.5 : 1,
           }}
         >
           {loading ? "⏳ Загрузка..." : "🔐 Войти с Google"}
@@ -304,11 +404,23 @@ export default function AuthPage() {
             setError(null);
             setSuccess(null);
           }}
-          style={styles.toggleButton}
+          className="liquid-glass-btn"
+          style={{
+            width: "100%",
+            padding: "16px",
+            color: "#1A1A1A",
+            border: "none",
+            borderRadius: "50px",
+            cursor: "pointer",
+            fontSize: "14px",
+            fontWeight: 600,
+            marginTop: "20px",
+            fontFamily: "'Inter', sans-serif",
+          }}
         >
-          {isSignUp ? "Уже есть аккаунт? Вход" : "Нет аккаунта? Регистрация"}
+          {isSignUp ? "Нет аккаунта? Регистрация" : "Уже есть аккаунт? Вход"}
         </button>
       </div>
-    </main>
+    </div>
   );
 }

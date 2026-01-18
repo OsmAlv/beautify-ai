@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 import Link from "next/link";
-import styles from "./profile.module.css";
 
 interface Generation {
   id: string;
@@ -135,100 +134,355 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className={styles.container}>
-        <div className={styles.loading}>Загрузка профиля...</div>
+      <div style={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #FFE5E5 0%, #FFD4E5 25%, #FFF0F5 50%, #E0F4FF 75%, #F0E5FF 100%)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "'Inter', sans-serif",
+      }}>
+        <div style={{
+          fontSize: "18px",
+          fontWeight: 600,
+          color: "#1A1A1A",
+        }}>
+          Загрузка профиля...
+        </div>
       </div>
     );
   }
 
   return (
-    <div className={styles.container}>
+    <div style={{
+      minHeight: "100vh",
+      background: "linear-gradient(135deg, #FFE5E5 0%, #FFD4E5 25%, #FFF0F5 50%, #E0F4FF 75%, #F0E5FF 100%)",
+      fontFamily: "'Inter', sans-serif",
+      position: "relative",
+      overflow: "hidden",
+      padding: "20px",
+    }}>
+      {/* Декоративные блобы */}
+      <div style={{
+        position: "fixed",
+        width: "600px",
+        height: "600px",
+        background: "radial-gradient(circle, #FFB3BA 0%, #FFDFBA 100%)",
+        borderRadius: "50%",
+        filter: "blur(120px)",
+        opacity: 0.4,
+        top: "-150px",
+        left: "-150px",
+        pointerEvents: "none",
+        zIndex: 0,
+      }} />
+      <div style={{
+        position: "fixed",
+        width: "500px",
+        height: "500px",
+        background: "radial-gradient(circle, #BAE1FF 0%, #BAFFC9 100%)",
+        borderRadius: "50%",
+        filter: "blur(120px)",
+        opacity: 0.4,
+        bottom: "-100px",
+        right: "-100px",
+        pointerEvents: "none",
+        zIndex: 0,
+      }} />
+
       {/* Header */}
-      <div className={styles.header}>
-        <div className={styles.headerContent}>
-          <div>
-            <h1>Мой профиль</h1>
-            <p className={styles.email}>{user?.email}</p>
-          </div>
-          <Link href="/" className={styles.backButton}>
-            ← На главную
-          </Link>
-        </div>
-      </div>
+      <header style={{
+        position: "relative",
+        zIndex: 10,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "20px 40px",
+        marginBottom: "20px",
+      }}>
+        <Link href="/" style={{
+          fontSize: "14px",
+          fontWeight: 600,
+          letterSpacing: "2px",
+          color: "#2C2C2C",
+          textDecoration: "none",
+        }}>BEAUTIFY.AI</Link>
+        <Link href="/" style={{
+          fontSize: "14px",
+          color: "#2C2C2C",
+          textDecoration: "none",
+        }}>Главная</Link>
+      </header>
 
-      {/* Stats */}
-      {userData && (
-        <div className={styles.stats}>
-          <div className={styles.statCard}>
-            <div className={styles.statLabel}>🌶 Баланс</div>
-            <div className={styles.statValue}>{userData.nippies_balance}</div>
+      {/* Main Content */}
+      <main style={{
+        position: "relative",
+        zIndex: 1,
+        maxWidth: "1200px",
+        margin: "0 auto",
+      }}>
+        {/* Profile Card */}
+        <div style={{
+          background: "linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15))",
+          backdropFilter: "blur(20px) saturate(180%)",
+          WebkitBackdropFilter: "blur(20px) saturate(180%)",
+          borderRadius: "24px",
+          border: "1px solid rgba(255, 255, 255, 0.5)",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.3) inset",
+          padding: "32px",
+          marginBottom: "25px",
+        }}>
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "15px",
+          }}>
+            <div>
+              <h1 style={{
+                fontFamily: "'Playfair Display', serif",
+                fontSize: "32px",
+                fontWeight: 400,
+                lineHeight: 1.2,
+                color: "#1A1A1A",
+                letterSpacing: "-1px",
+                margin: "0 0 8px 0",
+              }}>
+                Мой профиль
+              </h1>
+              <p style={{
+                fontSize: "14px",
+                color: "#666",
+                margin: 0,
+              }}>
+                {user?.email}
+              </p>
+            </div>
+            <Link href="/" style={{
+              padding: "10px 20px",
+              background: "rgba(255, 255, 255, 0.15)",
+              backdropFilter: "blur(10px)",
+              color: "#1A1A1A",
+              border: "2px solid rgba(26, 26, 26, 0.2)",
+              borderRadius: "20px",
+              cursor: "pointer",
+              fontSize: "13px",
+              fontWeight: 600,
+              textDecoration: "none",
+              transition: "all 0.3s ease",
+            }}>
+              ← На главную
+            </Link>
           </div>
-          <div className={styles.statCard}>
-            <div className={styles.statLabel}>🎀 Pretty (осталось)</div>
-            <div className={styles.statValue}>
-              {userData.pretty_generations_remaining}
+        </div>
+
+        {/* Stats */}
+        {userData && (
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: "15px",
+            marginBottom: "30px",
+          }}>
+            <div style={{
+              background: "linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15))",
+              backdropFilter: "blur(20px) saturate(180%)",
+              WebkitBackdropFilter: "blur(20px) saturate(180%)",
+              borderRadius: "16px",
+              border: "1px solid rgba(255, 255, 255, 0.5)",
+              boxShadow: "0 4px 16px rgba(0, 0, 0, 0.05)",
+              padding: "20px",
+              textAlign: "center",
+            }}>
+              <div style={{ fontSize: "14px", color: "#666", marginBottom: "8px" }}>Баланс</div>
+              <div style={{ fontSize: "28px", fontWeight: 700, color: "#1A1A1A" }}>{userData.nippies_balance}</div>
+            </div>
+            <div style={{
+              background: "linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15))",
+              backdropFilter: "blur(20px) saturate(180%)",
+              WebkitBackdropFilter: "blur(20px) saturate(180%)",
+              borderRadius: "16px",
+              border: "1px solid rgba(255, 255, 255, 0.5)",
+              boxShadow: "0 4px 16px rgba(0, 0, 0, 0.05)",
+              padding: "20px",
+              textAlign: "center",
+            }}>
+              <div style={{ fontSize: "14px", color: "#666", marginBottom: "8px" }}>🎀 Pretty (осталось)</div>
+              <div style={{ fontSize: "28px", fontWeight: 700, color: "#1A1A1A" }}>{userData.pretty_generations_remaining}</div>
+            </div>
+            <div style={{
+              background: "linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15))",
+              backdropFilter: "blur(20px) saturate(180%)",
+              WebkitBackdropFilter: "blur(20px) saturate(180%)",
+              borderRadius: "16px",
+              border: "1px solid rgba(255, 255, 255, 0.5)",
+              boxShadow: "0 4px 16px rgba(0, 0, 0, 0.05)",
+              padding: "20px",
+              textAlign: "center",
+            }}>
+              <div style={{ fontSize: "14px", color: "#666", marginBottom: "8px" }}>Hot (осталось)</div>
+              <div style={{ fontSize: "28px", fontWeight: 700, color: "#1A1A1A" }}>{userData.hot_generations_remaining}</div>
+            </div>
+            <div style={{
+              background: "linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15))",
+              backdropFilter: "blur(20px) saturate(180%)",
+              WebkitBackdropFilter: "blur(20px) saturate(180%)",
+              borderRadius: "16px",
+              border: "1px solid rgba(255, 255, 255, 0.5)",
+              boxShadow: "0 4px 16px rgba(0, 0, 0, 0.05)",
+              padding: "20px",
+              textAlign: "center",
+            }}>
+              <div style={{ fontSize: "14px", color: "#666", marginBottom: "8px" }}>Всего генераций</div>
+              <div style={{ fontSize: "28px", fontWeight: 700, color: "#1A1A1A" }}>{generations.length}</div>
             </div>
           </div>
-          <div className={styles.statCard}>
-            <div className={styles.statLabel}>🔥 Hot (осталось)</div>
-            <div className={styles.statValue}>
-              {userData.hot_generations_remaining}
-            </div>
-          </div>
-          <div className={styles.statCard}>
-            <div className={styles.statLabel}>📊 Всего генераций</div>
-            <div className={styles.statValue}>{generations.length}</div>
-          </div>
-        </div>
-      )}
+        )}
 
-      {/* Main content */}
-      <div className={styles.content}>
-        {/* Generations List */}
-        <div className={styles.generationsSection}>
-          <h2>История генераций</h2>
+        {/* Generations Section */}
+        <div style={{
+          background: "linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15))",
+          backdropFilter: "blur(20px) saturate(180%)",
+          WebkitBackdropFilter: "blur(20px) saturate(180%)",
+          borderRadius: "24px",
+          border: "1px solid rgba(255, 255, 255, 0.5)",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.3) inset",
+          padding: "32px",
+        }}>
+          <h2 style={{
+            fontSize: "24px",
+            fontWeight: 600,
+            color: "#1A1A1A",
+            marginBottom: "25px",
+          }}>
+            История генераций
+          </h2>
 
           {generations.length === 0 ? (
-            <div className={styles.emptyState}>
-              <p>У вас ещё нет генераций</p>
-              <Link href="/" className={styles.ctaButton}>
+            <div style={{
+              textAlign: "center",
+              padding: "60px 20px",
+            }}>
+              <p style={{
+                fontSize: "16px",
+                color: "#666",
+                marginBottom: "20px",
+              }}>
+                У вас ещё нет генераций
+              </p>
+              <Link href="/" style={{
+                display: "inline-block",
+                padding: "12px 28px",
+                background: "#1A1A1A",
+                color: "white",
+                border: "2px solid #1A1A1A",
+                borderRadius: "50px",
+                textDecoration: "none",
+                fontSize: "14px",
+                fontWeight: 600,
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+                transition: "all 0.3s ease",
+              }}>
                 Начать создавать
               </Link>
             </div>
           ) : (
-            <div className={styles.generationsGrid}>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+              gap: "20px",
+            }}>
               {generations.map((gen) => (
-                <div key={gen.id} className={styles.generationCard}>
-                  {/* Thumbnail placeholder */}
+                <div key={gen.id} style={{
+                  background: "rgba(255, 255, 255, 0.5)",
+                  borderRadius: "16px",
+                  overflow: "hidden",
+                  border: "1px solid rgba(26, 26, 26, 0.1)",
+                  transition: "all 0.3s ease",
+                }}>
                   <div
-                    className={styles.thumbnail}
                     style={{
+                      height: "200px",
                       backgroundColor: `${modeColors[gen.mode]}20`,
-                      borderColor: modeColors[gen.mode],
+                      borderBottom: `3px solid ${modeColors[gen.mode]}`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      position: "relative",
                     }}
+                    onClick={() => handleViewImage(gen)}
                   >
-                    <div className={styles.thumbnailOverlay}>
-                      <button
-                        className={styles.viewButton}
-                        onClick={() => handleViewImage(gen)}
-                        disabled={imageLoading}
-                      >
-                        {imageLoading ? "⏳" : "👁️ Просмотр"}
+                    <div style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: "rgba(0, 0, 0, 0.4)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      opacity: 0,
+                      transition: "opacity 0.3s",
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = "0"}>
+                      <button style={{
+                        padding: "10px 20px",
+                        background: "white",
+                        border: "none",
+                        borderRadius: "20px",
+                        fontSize: "14px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}>
+                        {imageLoading ? "Загрузка..." : "Просмотр"}
                       </button>
                     </div>
                   </div>
 
-                  {/* Info */}
-                  <div className={styles.cardInfo}>
-                    <div className={styles.modeTag} style={{ color: modeColors[gen.mode] }}>
+                  <div style={{ padding: "16px" }}>
+                    <div style={{
+                      display: "inline-block",
+                      padding: "4px 12px",
+                      background: "rgba(255, 255, 255, 0.8)",
+                      borderRadius: "12px",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      color: modeColors[gen.mode],
+                      marginBottom: "8px",
+                    }}>
                       {modeLabels[gen.mode]}
                     </div>
                     {gen.environment && gen.environment !== "original" && (
-                      <div className={styles.envTag}>{gen.environment}</div>
+                      <div style={{
+                        display: "inline-block",
+                        padding: "4px 12px",
+                        background: "rgba(26, 26, 26, 0.05)",
+                        borderRadius: "12px",
+                        fontSize: "12px",
+                        marginLeft: "8px",
+                        color: "#666",
+                      }}>
+                        {gen.environment}
+                      </div>
                     )}
-                    <div className={styles.date}>{formatDate(gen.created_at)}</div>
+                    <div style={{
+                      fontSize: "12px",
+                      color: "#666",
+                      marginTop: "8px",
+                    }}>
+                      {formatDate(gen.created_at)}
+                    </div>
                     {gen.cost > 0 && (
-                      <div className={styles.cost}>Стоимость: {gen.cost} 🌶</div>
+                      <div style={{
+                        fontSize: "12px",
+                        color: "#1A1A1A",
+                        fontWeight: 600,
+                        marginTop: "4px",
+                      }}>
+                        Стоимость: {gen.cost} nippies
+                      </div>
                     )}
                   </div>
                 </div>
@@ -237,74 +491,127 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {/* Image Viewer Modal */}
+        {/* Modal */}
         {selectedGen && (
-          <div className={styles.modal}>
-            <div className={styles.modalContent}>
+          <div style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.7)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: "20px",
+          }}
+          onClick={() => setSelectedGen(null)}>
+            <div style={{
+              background: "linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9))",
+              borderRadius: "24px",
+              padding: "32px",
+              maxWidth: "800px",
+              maxHeight: "90vh",
+              overflow: "auto",
+              position: "relative",
+            }}
+            onClick={(e) => e.stopPropagation()}>
               <button
-                className={styles.closeButton}
+                style={{
+                  position: "absolute",
+                  top: "16px",
+                  right: "16px",
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  border: "none",
+                  background: "rgba(0, 0, 0, 0.1)",
+                  fontSize: "24px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
                 onClick={() => setSelectedGen(null)}
               >
                 ✕
               </button>
 
-              <div className={styles.modalBody}>
+              <div>
                 {selectedGen.is_expired ? (
-                  <div className={styles.expiredMessage}>
-                    <div className={styles.expiredIcon}>⏰</div>
-                    <h3>Изображение удалено</h3>
-                    <p>
+                  <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                    <div style={{ fontSize: "64px", marginBottom: "20px" }}>⏰</div>
+                    <h3 style={{ fontSize: "24px", fontWeight: 600, marginBottom: "12px", color: "#1A1A1A" }}>
+                      Изображение удалено
+                    </h3>
+                    <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px" }}>
                       Wavespeed API хранит изображения только 7 дней. Эта генерация
                       была создана {selectedGen.age_days} дней назад и больше не доступна.
                     </p>
                     {selectedGen.original_image_url && (
-                      <div className={styles.originalSection}>
-                        <p className={styles.sectionLabel}>Оригинальное изображение:</p>
+                      <div style={{ marginTop: "30px" }}>
+                        <p style={{ fontSize: "13px", fontWeight: 600, marginBottom: "12px", color: "#1A1A1A" }}>
+                          Оригинальное изображение:
+                        </p>
                         <img
                           src={selectedGen.original_image_url}
                           alt="Original"
-                          className={styles.originalImage}
+                          style={{ maxWidth: "100%", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
                         />
                       </div>
                     )}
                   </div>
                 ) : selectedGen.error ? (
-                  <div className={styles.errorMessage}>
-                    <div className={styles.errorIcon}>❌</div>
-                    <h3>Ошибка загрузки</h3>
-                    <p>{selectedGen.error}</p>
+                  <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                    <div style={{ fontSize: "64px", marginBottom: "20px" }}>❌</div>
+                    <h3 style={{ fontSize: "24px", fontWeight: 600, marginBottom: "12px", color: "#1A1A1A" }}>
+                      Ошибка загрузки
+                    </h3>
+                    <p style={{ fontSize: "14px", color: "#666" }}>{selectedGen.error}</p>
                     {selectedGen.original_image_url && (
-                      <div className={styles.originalSection}>
-                        <p className={styles.sectionLabel}>Оригинальное изображение:</p>
+                      <div style={{ marginTop: "30px" }}>
+                        <p style={{ fontSize: "13px", fontWeight: 600, marginBottom: "12px", color: "#1A1A1A" }}>
+                          Оригинальное изображение:
+                        </p>
                         <img
                           src={selectedGen.original_image_url}
                           alt="Original"
-                          className={styles.originalImage}
+                          style={{ maxWidth: "100%", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
                         />
                       </div>
                     )}
                   </div>
                 ) : selectedGen.image_url ? (
-                  <div className={styles.imageWrapper}>
+                  <div>
                     <img
                       src={selectedGen.image_url}
                       alt="Generated"
-                      className={styles.fullImage}
+                      style={{
+                        width: "100%",
+                        maxHeight: "60vh",
+                        objectFit: "contain",
+                        borderRadius: "12px",
+                        marginBottom: "20px",
+                      }}
                     />
-                    <div className={styles.imageInfo}>
-                      <p>
+                    <div style={{
+                      background: "rgba(26, 26, 26, 0.05)",
+                      padding: "16px",
+                      borderRadius: "12px",
+                      fontSize: "14px",
+                    }}>
+                      <p style={{ marginBottom: "8px" }}>
                         <strong>Режим:</strong> {modeLabels[selectedGen.mode]}
                       </p>
                       {selectedGen.environment && (
-                        <p>
+                        <p style={{ marginBottom: "8px" }}>
                           <strong>Окружение:</strong> {selectedGen.environment}
                         </p>
                       )}
-                      <p>
+                      <p style={{ marginBottom: "8px" }}>
                         <strong>Дата:</strong> {formatDate(selectedGen.created_at)}
                       </p>
                       {selectedGen.age_days !== undefined && (
-                        <p>
+                        <p style={{ marginBottom: "8px" }}>
                           <strong>Возраст:</strong> {selectedGen.age_days} дней назад
                         </p>
                       )}
@@ -313,7 +620,17 @@ export default function ProfilePage() {
                           href={selectedGen.original_image_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className={styles.downloadLink}
+                          style={{
+                            display: "inline-block",
+                            marginTop: "12px",
+                            padding: "8px 16px",
+                            background: "#1A1A1A",
+                            color: "white",
+                            borderRadius: "20px",
+                            textDecoration: "none",
+                            fontSize: "13px",
+                            fontWeight: 600,
+                          }}
                         >
                           📥 Скачать оригинал
                         </a>
@@ -321,13 +638,15 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 ) : (
-                  <div className={styles.loadingMessage}>⏳ Загрузка...</div>
+                  <div style={{ textAlign: "center", padding: "40px", fontSize: "18px", color: "#666" }}>
+                    ⏳ Загрузка...
+                  </div>
                 )}
               </div>
             </div>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
