@@ -54,10 +54,10 @@ a {
 /* Landing Page Styles */
 .landing-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #FFE5E5 0%, #FFD4E5 25%, #FFF0F5 50%, #E0F4FF 75%, #F0E5FF 100%);
+  background: linear-gradient(135deg, #FFE5E5 0%, #FFD4E5 25%, #FFF0F5 50%, #E8D5F2 75%, #E0E8FF 100%);
   position: relative;
   overflow: hidden;
-  font-family: 'Inter', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .bg-blob {
@@ -107,7 +107,7 @@ a {
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 2px;
-  color: #2C2C2C;
+  color: #1A1A1A;
 }
 
 .nav {
@@ -124,6 +124,33 @@ a {
 
 .nav-link:hover {
   opacity: 0.6;
+}
+
+.nav-link-signup {
+  font-weight: 600;
+  color: #667eea;
+  padding: 8px 20px;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 50px;
+  transition: all 0.3s ease;
+}
+
+.nav-link-signup:hover {
+  opacity: 1;
+  background: rgba(102, 126, 234, 0.2);
+  transform: translateY(-2px);
+}
+
+.nav-link-profile {
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .main-content {
@@ -225,9 +252,9 @@ a {
 }
 
 .main-title {
-  font-family: 'Playfair Display', serif;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 64px;
-  font-weight: 400;
+  font-weight: 600;
   line-height: 1.2;
   color: #1A1A1A;
   letter-spacing: -1px;
@@ -247,6 +274,57 @@ a {
   flex-direction: column;
   gap: 16px;
   max-width: 420px;
+}
+
+/* Кнопки авторизации */
+.auth-buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+  max-width: 420px;
+}
+
+.btn-auth {
+  flex: 1;
+  padding: 16px 32px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-signup {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+}
+
+.btn-signup:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.5);
+}
+
+.btn-login {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.btn-login:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
 }
 
 .btn {
@@ -301,11 +379,30 @@ a {
   .header {
     padding: 20px 30px;
   }
+  
+  .nav {
+    gap: 15px;
+  }
+  
+  .nav-link {
+    font-size: 12px;
+  }
+  
   .main-content {
     padding: 30px;
   }
+  
   .main-title {
     font-size: 36px;
+  }
+  
+  .auth-buttons {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .btn-auth {
+    width: 100%;
   }
 }
 
@@ -471,4 +568,51 @@ button {
     0 12px 48px rgba(0, 0, 0, 0.4),
     inset 0 2px 0 rgba(255, 255, 255, 0.4),
     inset 0 -2px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* Liquid Glass Slider */
+.liquid-glass-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(140, 140, 140, 0.9) 0%, rgba(100, 100, 100, 0.85) 100%);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 4px rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.liquid-glass-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  background: linear-gradient(135deg, rgba(160, 160, 160, 0.95) 0%, rgba(120, 120, 120, 0.9) 100%);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), 0 0 0 6px rgba(255, 255, 255, 0.5);
+}
+
+.liquid-glass-slider::-webkit-slider-thumb:active {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 3px rgba(255, 255, 255, 0.4);
+}
+
+.liquid-glass-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(140, 140, 140, 0.9) 0%, rgba(100, 100, 100, 0.85) 100%);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 4px rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+}
+
+.liquid-glass-slider::-moz-range-thumb:hover {
+  transform: scale(1.15);
+  background: linear-gradient(135deg, rgba(160, 160, 160, 0.95) 0%, rgba(120, 120, 120, 0.9) 100%);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), 0 0 0 6px rgba(255, 255, 255, 0.5);
+}
+
+.liquid-glass-slider::-moz-range-thumb:active {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 3px rgba(255, 255, 255, 0.4);
 }

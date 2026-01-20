@@ -321,21 +321,46 @@ export default function GoonAI() {
           </div>
           <div style={styles.userInfo}>
             {userData ? (
-              <div style={{ textAlign: "right" }}>
+              <div style={{ 
+                display: "flex",
+                alignItems: "center",
+                gap: "16px",
+              }}>
                 <div style={{
-                  ...styles.nippies,
-                  marginRight: "0",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  padding: "8px 16px",
+                  background: "rgba(255, 255, 255, 0.5)",
+                  borderRadius: "50px",
+                  border: "1px solid rgba(26, 26, 26, 0.1)",
                 }}>
-                  {userData.is_superuser ? (
-                    <span style={{ color: "#ff6b9d", fontWeight: "900", fontSize: "18px" }}>
-                      👑 СУПЕР
-                    </span>
-                  ) : (
-                    <>🌶 {userData.nippies_balance.toFixed(0)} nippies</>
-                  )}
-                </div>
-                <div style={{ fontSize: "14px", color: "#666", marginTop: "5px" }}>
-                  {userData.username}
+                  <div style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                  }}>
+                    {userData.username?.[0]?.toUpperCase() || "U"}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A" }}>
+                      {userData.username}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#666" }}>
+                      {userData.is_superuser ? (
+                        <span style={{ color: "#ff6b9d", fontWeight: "700" }}>👑 СУПЕР</span>
+                      ) : (
+                        <>🌶 {userData.nippies_balance.toFixed(0)} nippies</>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <div style={{ marginTop: "8px", display: "flex", gap: "8px", justifyContent: "flex-end" }}>
                   <Link href="/" style={{ textDecoration: "none" }}>

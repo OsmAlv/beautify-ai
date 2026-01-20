@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const WAVESPEED_API_KEY = process.env.WAVESPEED_API_KEY;
-const WAVESPEED_NANOBANA_URL = "https://api.wavespeed.ai/api/v3/google/nano-banana-pro/edit";
+const WAVESPEED_NANOBANA_PRO_URL = "https://api.wavespeed.ai/api/v3/google/nano-banana-pro/edit";
 const WAVESPEED_RESULT_URL = "https://api.wavespeed.ai/api/v3/predictions";
 
 async function waitForResult(requestId: string, maxAttempts = 120) {
@@ -33,20 +33,85 @@ async function waitForResult(requestId: string, maxAttempts = 120) {
   throw new Error(`Превышено время ожидания (${maxAttempts * 3} секунд)`);
 }
 
+// Функция для определения языка и перевода на английский
+async function translateToEnglish(text: string): Promise<string> {
+  // Проверяем, содержит ли текст кириллицу
+  const hasCyrillic = /[а-яА-ЯёЁ]/.test(text);
+  
+  if (!hasCyrillic) {
+    // Если текст уже на английском, возвращаем как есть
+    return text;
+  }
+
+  try {
+    // Используем бесплатный API для перевода
+    const response = await fetch(
+      `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ru&tl=en&dt=t&q=${encodeURIComponent(text)}`
+    );
+    
+    const data = await response.json();
+    
+    // Извлекаем переведенный текст
+    const translated = data[0]?.map((item: any) => item[0]).join('') || text;
+    
+    console.log(`🌐 Перевод: "${text}" → "${translated}"`);
+    return translated;
+  } catch (error) {
+    console.error("❌ Ошибка перевода, используем оригинальный текст:", error);
+    return text; // В случае ошибки возвращаем оригинальный текст
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { imageUrl, customPrompt, photoCount = 5, environment = "studio", userId } = await request.json();
+    const { imageUrls, customPrompt, photoCount = 5, environment = "studio", model = "nanobana", userId } = await request.json();
+
+    console.log("🎬 Начало обработки запроса на фотосессию:", {
+      userId,
+      photoCount,
+      environment,
+      model,
+      hasImages: !!imageUrls,
+      imageCount: imageUrls?.length || 0,
+      hasCustomPrompt: !!customPrompt
+    });
 
     if (!userId) {
+      console.error("❌ Отсутствует userId");
       return NextResponse.json(
         { error: "Требуется авторизация" },
         { status: 401 }
       );
     }
 
-    if (!WAVESPEED_API_KEY) {
+    if (!imageUrls || imageUrls.length === 0) {
+      console.error("❌ Отсутствуют изображения");
       return NextResponse.json(
-        { error: "API ключ не настроен" },
+        { error: "Необходимо загрузить хотя бы одну фотографию" },
+        { status: 400 }
+      );
+    }
+
+    if (!WAVESPEED_API_KEY) {
+      console.error("❌ WAVESPEED_API_KEY не настроен в environment variables");
+      return NextResponse.json(
+        { error: "API ключ Wavespeed не настроен. Обратитесь к администратору." },
+        { status: 500 }
+      );
+    }
+
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      console.error("❌ NEXT_PUBLIC_SUPABASE_URL не настроен");
+      return NextResponse.json(
+        { error: "Supabase URL не настроен. Обратитесь к администратору." },
+        { status: 500 }
+      );
+    }
+
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("❌ SUPABASE_SERVICE_ROLE_KEY не настроен");
+      return NextResponse.json(
+        { error: "Supabase Service Role Key не настроен. Обратитесь к администратору." },
         { status: 500 }
       );
     }
@@ -97,6 +162,7 @@ export async function POST(request: NextRequest) {
     console.log("🌍 Окружение:", environment);
     console.log("📝 Кастомный промпт:", customPrompt || "не задан");
     console.log("🔢 Количество фото:", photoCount);
+    console.log("🖼️ Количество загруженных фото:", imageUrls.length);
 
     // Описания окружений
     const environmentDescriptions = {
@@ -108,13 +174,41 @@ export async function POST(request: NextRequest) {
 
     const envDesc = environmentDescriptions[environment as keyof typeof environmentDescriptions] || environmentDescriptions.studio;
 
-    // Базовый промпт для фотосессии
-    const basePrompt = `Professional photoshoot of this person in ${envDesc}. Ultra high quality, photorealistic, magazine quality photography. Perfect lighting, natural skin texture, professional composition.`;
+    // Переводим кастомный промпт на английский, если он на русском
+    const translatedPrompt = customPrompt ? await translateToEnglish(customPrompt) : null;
+
+    // Улучшенный базовый промпт с акцентом на сохранение лица
+    // Если есть кастомный промпт, он идет первым как главная инструкция
+    const sceneDescription = translatedPrompt || `in ${envDesc}`;
     
-    // Итоговый промпт с кастомизацией
-    const finalPrompt = customPrompt 
-      ? `${basePrompt} ${customPrompt}` 
-      : basePrompt;
+    const basePrompt = `ABSOLUTE PRIORITY: Keep the face 100% identical to the uploaded photo. The face MUST NOT change at all.
+
+FACE IDENTITY LOCK:
+- Use the uploaded photo as the ONLY reference for facial identity
+- The face structure, proportions, features MUST remain exactly the same
+- Same nose, same eyes, same lips, same jawline, same cheekbones, same forehead, same chin
+- Same facial proportions and distances between features
+- Same age, same ethnicity, same unique characteristics
+- Zero tolerance for facial changes - face must be pixel-perfect identical
+
+Generate a highly photorealistic professional photoshoot ${sceneDescription}, as if captured with a high-end full-frame DSLR camera.
+
+ALLOWED CHANGES ONLY:
+- Background and environment
+- Clothing and accessories
+- Lighting and camera angle
+- Body pose and position
+- Facial expression (smile, serious, etc.) - but facial features stay identical
+
+FORBIDDEN CHANGES:
+- NO changes to face structure, shape, or features
+- NO changes to nose, eyes, lips, jawline, cheekbones
+- NO changes to facial proportions or identity
+
+Natural lighting, realistic shadows, accurate skin texture (pores, fine details, natural imperfections), true-to-life colors.
+Real photograph look, not illustration, CGI, 3D render, or stylized image.`;
+    
+    const finalPrompt = basePrompt;
 
     console.log("📝 Финальный промпт:", finalPrompt);
 
@@ -126,16 +220,27 @@ export async function POST(request: NextRequest) {
 
       // Добавляем вариацию в промпт для разнообразия
       const variations = [
-        "front view, confident pose",
-        "side profile, elegant stance",
-        "three-quarter view, natural expression",
-        "dynamic pose, expressive gesture",
-        "close-up portrait, engaging look",
+        "front view, confident pose, looking at camera",
+        "side profile, elegant stance, soft smile",
+        "three-quarter view, natural expression, relaxed posture",
+        "dynamic pose, expressive gesture, natural movement",
+        "close-up portrait, engaging look, direct eye contact",
+        "full body shot, standing pose, hands on hips",
+        "candid moment, genuine smile, natural pose",
+        "over the shoulder look, mysterious vibe",
+        "sitting pose, crossed legs, elegant posture",
+        "walking pose, natural stride, confident energy",
       ];
       
       const variantPrompt = `${finalPrompt}. ${variations[i % variations.length]}`;
 
-      const editResponse = await fetch(WAVESPEED_NANOBANA_URL, {
+      // Используем Nano Banana Pro (лучшая версия)
+      const apiUrl = WAVESPEED_NANOBANA_PRO_URL;
+      const modelName = "Nano Banana Pro";
+      
+      console.log(`🤖 Используем модель: ${modelName}`);
+
+      const editResponse = await fetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -144,27 +249,50 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           enable_base64_output: false,
           enable_sync_mode: false,
-          images: [imageUrl],
+          images: imageUrls, // Отправляем все фотографии
           prompt: variantPrompt,
+          quality: "high", // Высокое качество
+          input_fidelity: "high", // КЛЮЧЕВОЙ параметр для сохранения лица!
+          output_format: "jpeg", // Формат вывода
+          guidance_scale: 12.0, // МАКСИМАЛЬНО строгое следование промпту о сохранении лица
+          strength: 0.25, // МИНИМАЛЬНЫЕ изменения (25% изменений, 75% оригинал)
+          num_inference_steps: 75, // Больше шагов = лучшее качество и точность
         }),
+        signal: AbortSignal.timeout(60000), // Тайм-аут 60 секунд
       });
 
       const editData = await editResponse.json();
 
       if (!editResponse.ok) {
-        console.error("❌ Wavespeed API ошибка:", editData);
+        console.error(`❌ Wavespeed API ошибка для фото ${i + 1}:`, {
+          status: editResponse.status,
+          statusText: editResponse.statusText,
+          error: editData
+        });
         continue; // Пропускаем ошибочное фото
       }
 
       const requestId = editData.data?.id;
-      if (!requestId) continue;
+      if (!requestId) {
+        console.error(`❌ Не получен requestId для фото ${i + 1}:`, editData);
+        continue;
+      }
+      
+      console.log(`🆔 Request ID для фото ${i + 1}: ${requestId}`);
 
-      const result = await waitForResult(requestId);
-      const resultImageUrl = result.outputs?.[0];
+      try {
+        const result = await waitForResult(requestId);
+        const resultImageUrl = result.outputs?.[0];
 
-      if (resultImageUrl) {
-        results.push(resultImageUrl);
-        console.log(`✅ Фото ${i + 1} готово!`);
+        if (resultImageUrl) {
+          results.push(resultImageUrl);
+          console.log(`✅ Фото ${i + 1} готово! URL: ${resultImageUrl.substring(0, 50)}...`);
+        } else {
+          console.error(`❌ Фото ${i + 1}: результат получен, но URL отсутствует:`, result);
+        }
+      } catch (waitError) {
+        console.error(`❌ Ошибка при ожидании результата фото ${i + 1}:`, waitError);
+        // Продолжаем со следующим фото
       }
     }
 

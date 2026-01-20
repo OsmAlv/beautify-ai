@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export default function LandingPage() {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [user, setUser] = useState<any>(null);
   
   const images = [
     "/landing-img/1.jpg",
@@ -21,6 +23,25 @@ export default function LandingPage() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user || null);
+    };
+
+    checkAuth();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setUser(session?.user || null);
+      }
+    );
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, []);
+
   return (
     <div className="landing-container">
       {/* Декоративные блобы */}
@@ -30,9 +51,53 @@ export default function LandingPage() {
 
       {/* Шапка */}
       <header className="header">
-        <div className="logo">BEAUTIFY.AI</div>
+        <div className="logo" style={{ color: "#1A1A1A" }}>BEAUTIFY.AI</div>
         <nav className="nav">
           <a href="/" className="nav-link">Главная</a>
+          {!user ? (
+            <>
+              <a href="/auth?mode=signup" className="nav-link nav-link-signup">Регистрация</a>
+              <a href="/auth" className="nav-link">Войти</a>
+            </>
+          ) : (
+            <button 
+              className="nav-link-profile"
+              onClick={() => router.push('/profile')}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "8px 16px",
+                background: "rgba(255, 255, 255, 0.5)",
+                borderRadius: "50px",
+                border: "1px solid rgba(26, 26, 26, 0.1)",
+                cursor: "pointer",
+                textDecoration: "none",
+              }}
+            >
+              <div style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "white",
+                fontWeight: 600,
+                fontSize: "14px",
+              }}>
+                {user.email?.[0]?.toUpperCase() || "U"}
+              </div>
+              <div style={{
+                fontSize: "14px",
+                fontWeight: 600,
+                color: "#1A1A1A",
+              }}>
+                {user.email?.split('@')[0] || "Профиль"}
+              </div>
+            </button>
+          )}
         </nav>
       </header>
 
@@ -66,8 +131,7 @@ export default function LandingPage() {
         {/* Правая колонка - Текст */}
         <div className="content-section">
           <h1 className="main-title">
-            Привет! Я —<br />
-            AI-сервис красоты.
+            Привет!<br />Я — AI-сервис красоты.
           </h1>
           <p className="main-description">
             Мы подчёркиваем твою естественную красоту<br />
@@ -78,7 +142,7 @@ export default function LandingPage() {
             <button className="btn btn-primary liquid-glass-btn-dark" onClick={() => router.push('/editor')}>
               ПОПРОБОВАТЬ
             </button>
-            <button className="btn btn-secondary liquid-glass-btn" onClick={() => router.push('/profile')}>
+            <button className="btn btn-secondary liquid-glass-btn" onClick={() => router.push('/examples')}>
               ПРИМЕРЫ
             </button>
             <button className="btn btn-secondary liquid-glass-btn" onClick={() => router.push('/photoshoot')}>

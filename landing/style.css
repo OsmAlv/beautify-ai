@@ -90,6 +90,21 @@ body {
     opacity: 0.6;
 }
 
+.nav-link-signup {
+    font-weight: 600;
+    color: #667eea;
+    padding: 8px 20px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+
+.nav-link-signup:hover {
+    opacity: 1;
+    background: rgba(102, 126, 234, 0.2);
+    transform: translateY(-2px);
+}
+
 /* ============================================
    ОСНОВНОЙ КОНТЕЙНЕР
    ============================================ */
@@ -330,6 +345,47 @@ body {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
+/* Кнопки авторизации */
+.auth-buttons {
+    display: flex;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    padding: 16px 32px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.5);
+}
+
+.btn-secondary-outline {
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    color: #667eea;
+    border: 2px solid #667eea;
+    padding: 16px 32px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.btn-secondary-outline:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+}
+
 /* ============================================
    АДАПТИВНОСТЬ
    ============================================ */
@@ -351,11 +407,24 @@ body {
     .buttons-group {
         max-width: 100%;
     }
+
+    .auth-buttons {
+        flex-direction: row;
+        gap: 12px;
+    }
 }
 
 @media (max-width: 768px) {
     .header {
         padding: 20px 30px;
+    }
+
+    .nav {
+        gap: 15px;
+    }
+
+    .nav-link {
+        font-size: 12px;
     }
 
     .main-container {
@@ -372,6 +441,17 @@ body {
 
     .photo-card {
         max-width: 100%;
+    }
+
+    .auth-buttons {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .btn-secondary,
+    .btn-secondary-outline {
+        width: 100%;
+        text-align: center;
     }
 }
 

@@ -343,9 +343,9 @@ export default function Home() {
   const styles = {
     main: {
       minHeight: "100vh",
-      background: "linear-gradient(135deg, #FFE5E5 0%, #FFD4E5 25%, #FFF0F5 50%, #E0F4FF 75%, #F0E5FF 100%)",
+      background: "linear-gradient(135deg, #FFE5E5 0%, #FFD4E5 25%, #FFF0F5 50%, #E8D5F2 75%, #E0E8FF 100%)",
       padding: "20px",
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
       position: "relative" as const,
       overflow: "hidden",
     } as React.CSSProperties,
@@ -415,7 +415,7 @@ export default function Home() {
       fontWeight: 700,
       color: "#1A1A1A",
       margin: "0",
-      fontFamily: "'Playfair Display', serif",
+      fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
       letterSpacing: isMobile ? "-1px" : "-2px",
       lineHeight: "1.2",
     } as React.CSSProperties,
@@ -569,6 +569,121 @@ export default function Home() {
       <div style={styles.bgBlob1}></div>
       <div style={styles.bgBlob2}></div>
       
+      {/* Header with Profile */}
+      <header style={{
+        maxWidth: "1200px",
+        margin: "0 auto 30px auto",
+        padding: "20px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}>
+        <div style={{
+          fontSize: "24px",
+          fontWeight: 700,
+          color: "#1A1A1A",
+          fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+        }}>
+          BEAUTIFY.AI
+        </div>
+        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+          {user ? (
+            <>
+              <a href="/photoshoot" style={{ textDecoration: "none" }}>
+                <button className="liquid-glass-btn" style={{
+                  padding: "8px 16px",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  background: "rgba(194, 24, 91, 0.1)",
+                  border: "1px solid rgba(194, 24, 91, 0.3)",
+                  borderRadius: "50px",
+                  color: "#C2185B",
+                  cursor: "pointer",
+                  fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+                }}>
+                  📸 Фотосессия
+                </button>
+              </a>
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "8px 16px",
+                background: "rgba(255, 255, 255, 0.95)",
+                borderRadius: "50px",
+                border: "1px solid rgba(26, 26, 26, 0.1)",
+                cursor: "pointer",
+              }}
+              onClick={() => window.location.href = '/profile'}>
+                <div style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "white",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                }}>
+                  {userData?.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "U"}
+                </div>
+                <div style={{
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  color: "#1A1A1A",
+                  fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+                }}>
+                  {userData?.username || user.email?.split('@')[0] || "Профиль"}
+                </div>
+                {userData?.is_superuser ? (
+                  <span style={{ fontSize: "14px" }}>👑</span>
+                ) : (
+                  <span style={{ fontSize: "12px", color: "#666", fontWeight: 600 }}>
+                    💰 {userData?.nippies_balance?.toFixed(0) || 0}
+                  </span>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <a href="/auth?mode=signup" style={{ textDecoration: "none" }}>
+                <button style={{
+                  padding: "8px 20px",
+                  background: "linear-gradient(135deg, #EC407A 0%, #F06292 100%)",
+                  border: "none",
+                  borderRadius: "50px",
+                  color: "white",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+                  boxShadow: "0 4px 12px rgba(236, 64, 122, 0.3)",
+                }}>
+                  Регистрация
+                </button>
+              </a>
+              <a href="/auth" style={{ textDecoration: "none" }}>
+                <button className="liquid-glass-btn" style={{
+                  padding: "8px 20px",
+                  background: "rgba(194, 24, 91, 0.1)",
+                  border: "1px solid rgba(194, 24, 91, 0.3)",
+                  borderRadius: "50px",
+                  color: "#C2185B",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+                }}>
+                  Войти
+                </button>
+              </a>
+            </>
+          )}
+        </div>
+      </header>
+
       {/* Hero Section */}
       <div style={{
         textAlign: "center",
@@ -577,10 +692,10 @@ export default function Home() {
       }}>
         <h1 style={{
           fontSize: isMobile ? "40px" : "56px",
-          fontWeight: "400",
+          fontWeight: "700",
           color: "#1A1A1A",
           margin: "0 0 15px 0",
-          fontFamily: "'Playfair Display', serif",
+          fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
           letterSpacing: "-1px",
           lineHeight: "1.2",
         }}>
@@ -590,8 +705,8 @@ export default function Home() {
           fontSize: isMobile ? "16px" : "18px",
           color: "#4A4A4A",
           margin: "0",
-          fontWeight: "300",
-          fontFamily: "'Inter', sans-serif",
+          fontWeight: "400",
+          fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
           letterSpacing: "0.3px",
           lineHeight: "1.8",
         }}>
@@ -602,131 +717,57 @@ export default function Home() {
       <div style={styles.container}>
         {/* Top Info Bar */}
         <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
           marginBottom: "35px",
           paddingBottom: "20px",
           borderBottom: "2px solid #f0f0f0",
         }}>
-          <div>
-            <h2 style={styles.title}>Твой редактор</h2>
-          </div>
-          <div style={styles.userInfo}>
-            {userData ? (
-              <div style={{ textAlign: "right" }}>
-                <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                  gap: "12px",
-                  marginBottom: "8px",
-                }}>
-                  <div style={{
-                    padding: "8px 16px",
-                    background: "linear-gradient(135deg, rgba(255, 107, 157, 0.15) 0%, rgba(255, 175, 204, 0.15) 100%)",
-                    backdropFilter: "blur(10px)",
-                    borderRadius: "20px",
-                    border: "2px solid rgba(255, 107, 157, 0.2)",
-                    fontSize: "14px",
-                    fontWeight: "700",
-                    color: "#ff6b9d",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}>
-                    {userData.is_superuser ? (
-                      <>
-                        <span style={{ fontSize: "16px" }}>👑</span>
-                        <span>СУПЕР</span>
-                      </>
-                    ) : (
-                      <>
-                        <span style={{ fontSize: "16px" }}>💰</span>
-                        <span>{userData.nippies_balance.toFixed(0)}</span>
-                      </>
-                    )}
-                  </div>
-                  <div style={{
-                    padding: "8px 16px",
-                    background: "rgba(255, 255, 255, 0.4)",
-                    backdropFilter: "blur(10px)",
-                    borderRadius: "20px",
-                    border: "2px solid rgba(26, 26, 26, 0.1)",
-                    fontSize: "13px",
-                    fontWeight: "600",
-                    color: "#1A1A1A",
-                  }}>
-                    {userData.username}
-                  </div>
-                </div>
-                <div style={{ marginTop: "8px", display: "flex", gap: "8px", justifyContent: "flex-end", flexWrap: "wrap" }}>
-                  <a href="/photoshoot" style={{ textDecoration: "none" }}>
-                    <button className="liquid-glass-btn" style={{
-                      padding: "8px 16px",
-                      color: "#1A1A1A",
-                      border: "none",
-                      borderRadius: "20px",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                    }}>
-                      Фотосессия
-                    </button>
-                  </a>
-                  <a href="/profile" style={{ textDecoration: "none" }}>
-                    <button className="liquid-glass-btn" style={{
-                      padding: "8px 16px",
-                      color: "#1A1A1A",
-                      border: "none",
-                      borderRadius: "20px",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                    }}>
-                      Профиль
-                    </button>
-                  </a>
-                  <button onClick={handleLogout} className="liquid-glass-btn" style={{
-                    padding: "8px 16px",
-                    color: "#1A1A1A",
-                    border: "none",
-                    borderRadius: "20px",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                  }}>
-                    Выход
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: "14px", color: "#666", marginBottom: "10px" }}>
-                  {1 - unAuthGenerations} из 1 генерации
-                </div>
-                <a href="/auth" style={{ textDecoration: "none" }}>
-                  <button style={{
-                    padding: "10px 20px",
-                    background: "#1A1A1A",
-                    color: "white",
-                    border: "2px solid #1A1A1A",
-                    borderRadius: "20px",
-                    cursor: "pointer",
-                    fontWeight: "600",
-                    fontSize: "13px",
-                    transition: "all 0.3s ease",
-                  }}>
-                    Войти / Регистрация
-                  </button>
-                </a>
-              </div>
-            )}
-          </div>
+          <h2 style={styles.title}>Твой редактор</h2>
+          <p style={{
+            color: "#666",
+            margin: "8px 0 0 0",
+            fontSize: "14px",
+            fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+          }}>
+            Создавай уникальные изображения с помощью AI
+          </p>
         </div>
 
+        {/* Unauth Warning */}
+        {!user && (
+          <div style={{
+            padding: "15px 20px",
+            background: "rgba(255, 255, 255, 0.8)",
+            border: "2px solid rgba(26, 26, 26, 0.1)",
+            borderRadius: "12px",
+            marginBottom: "25px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+          }}>
+            <div style={{ fontSize: "14px", color: "#666" }}>
+              {1 - unAuthGenerations} из 1 генерации доступно
+            </div>
+            <a href="/auth" style={{ textDecoration: "none" }}>
+              <button style={{
+                padding: "10px 20px",
+                background: "#1A1A1A",
+                color: "white",
+                border: "2px solid #1A1A1A",
+                borderRadius: "20px",
+                cursor: "pointer",
+                fontWeight: "600",
+                fontSize: "13px",
+                transition: "all 0.3s ease",
+              }}>
+                Войти / Регистрация
+              </button>
+            </a>
+          </div>
+        )}
+
         {/* Статус сообщения */}
-        {userData && !userData.is_superuser && (
+        {userData && (
           <div style={{
             padding: "15px 18px",
             background: "linear-gradient(135deg, #fff8e1 0%, #ffe082 100%)",
@@ -739,33 +780,6 @@ export default function Home() {
           }}>
             Pretty: <strong>{userData.pretty_generations_remaining}</strong> бесплатных | 
             Hot: <strong>{userData.hot_generations_remaining}</strong> бесплатная (потом 37 nippies)
-          </div>
-        )}
-
-        {userData?.is_superuser && (
-          <div style={{
-            padding: "20px 24px",
-            background: "linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 140, 0, 0.15) 100%)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "16px",
-            marginBottom: "25px",
-            border: "2px solid rgba(255, 215, 0, 0.3)",
-            fontSize: "14px",
-            fontWeight: "600",
-            color: "#1A1A1A",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: "12px",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "20px" }}>👑</span>
-              <span style={{ fontWeight: 700, fontSize: "15px" }}>СУПЕР</span>
-            </div>
-            <div style={{ fontSize: "13px", opacity: 0.8 }}>
-              ∞ Бесконечные генерации
-            </div>
           </div>
         )}
 
@@ -891,183 +905,6 @@ export default function Home() {
             </div>
           </div>
         )}
-
-        {/* Статистика использования */}
-        {userData && !userData.is_superuser && (
-          <div style={{
-            marginBottom: "25px",
-            padding: "20px",
-            background: "rgba(255, 255, 255, 0.25)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "16px",
-            border: "1px solid rgba(255, 255, 255, 0.5)",
-          }}>
-            <h3 style={{
-              fontSize: "14px",
-              fontWeight: 700,
-              color: "#1A1A1A",
-              textTransform: "uppercase",
-              letterSpacing: "1px",
-              marginBottom: "16px",
-            }}>
-              Статистика
-            </h3>
-            
-            {/* Прогресс-бар nippies */}
-            <div style={{ marginBottom: "16px" }}>
-              <div style={{ 
-                display: "flex", 
-                justifyContent: "space-between", 
-                marginBottom: "8px",
-                fontSize: "12px",
-                fontWeight: 600,
-                color: "#666",
-              }}>
-                <span>Nippies</span>
-                <span>{userData.nippies_balance.toFixed(0)}</span>
-              </div>
-              <div style={{
-                height: "8px",
-                background: "rgba(26, 26, 26, 0.1)",
-                borderRadius: "10px",
-                overflow: "hidden",
-              }}>
-                <div style={{
-                  height: "100%",
-                  background: "linear-gradient(90deg, #ff6b9d 0%, #ff8fab 100%)",
-                  width: `${Math.min((userData.nippies_balance / 100) * 100, 100)}%`,
-                  transition: "width 0.5s ease",
-                }}></div>
-              </div>
-            </div>
-
-            {/* Генерации */}
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
-              gap: "12px",
-            }}>
-              <div style={{
-                padding: "12px",
-                background: "rgba(102, 126, 234, 0.1)",
-                borderRadius: "10px",
-                textAlign: "center",
-              }}>
-                <div style={{ fontSize: "24px", fontWeight: 700, color: "#667eea" }}>
-                  {userData.pretty_generations_remaining}
-                </div>
-                <div style={{ fontSize: "11px", color: "#666", marginTop: "4px" }}>
-                  Pretty осталось
-                </div>
-              </div>
-              <div style={{
-                padding: "12px",
-                background: "rgba(240, 147, 251, 0.1)",
-                borderRadius: "10px",
-                textAlign: "center",
-              }}>
-                <div style={{ fontSize: "24px", fontWeight: 700, color: "#f093fb" }}>
-                  {userData.hot_generations_remaining}
-                </div>
-                <div style={{ fontSize: "11px", color: "#666", marginTop: "4px" }}>
-                  Hot осталось
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Галерея примеров */}
-        <div style={{
-          marginBottom: "25px",
-        }}>
-          <div style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "12px",
-          }}>
-            <h3 style={{
-              fontSize: "14px",
-              fontWeight: 700,
-              color: "#1A1A1A",
-              textTransform: "uppercase",
-              letterSpacing: "1px",
-              margin: 0,
-            }}>
-              Примеры трансформаций
-            </h3>
-          </div>
-          
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)",
-            gap: "16px",
-            padding: "20px",
-            background: "rgba(255, 255, 255, 0.25)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "16px",
-            border: "1px solid rgba(255, 255, 255, 0.5)",
-          }}>
-            {[
-              { mode: "Pretty", desc: "Естественная красота", color: "#667eea" },
-              { mode: "Hot", desc: "Соблазнительный стиль", color: "#f093fb" },
-            ].map((example) => (
-                <div
-                  key={example.mode}
-                  style={{
-                    padding: "16px",
-                    background: "white",
-                    borderRadius: "12px",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    border: "2px solid rgba(26, 26, 26, 0.1)",
-                  }}
-                  onClick={() => {
-                    if (example.mode === "Pretty") applyPreset("natural");
-                    else if (example.mode === "Hot") applyPreset("moderate");
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-4px)";
-                    e.currentTarget.style.boxShadow = "0 8px 24px rgba(0, 0, 0, 0.1)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow = "none";
-                  }}
-                >
-                  <div style={{
-                    width: "100%",
-                    aspectRatio: "16/9",
-                    background: `linear-gradient(135deg, ${example.color}20 0%, ${example.color}40 100%)`,
-                    borderRadius: "8px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginBottom: "12px",
-                    fontSize: "32px",
-                  }}>
-                    {example.mode === "Pretty" ? "💎" : "🔥"}
-                  </div>
-                  <div style={{
-                    fontWeight: 700,
-                    fontSize: "14px",
-                    color: example.color,
-                    marginBottom: "4px",
-                  }}>
-                    {example.mode}
-                  </div>
-                  <div style={{
-                    fontSize: "12px",
-                    color: "#666",
-                    lineHeight: "1.4",
-                  }}>
-                    {example.desc}
-                  </div>
-                </div>
-              ))}
-            </div>
-        </div>
 
         {/* Main Content Grid */}
         <div style={{

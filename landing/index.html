@@ -20,6 +20,8 @@
         <div class="logo">BEAUTIFY.AI</div>
         <nav class="nav">
             <a href="#" class="nav-link">Главная</a>
+            <a href="/auth?mode=signup" class="nav-link nav-link-signup">Регистрация</a>
+            <a href="/auth" class="nav-link">Войти</a>
         </nav>
     </header>
 
@@ -64,11 +66,18 @@
                 <button class="btn btn-outline" onclick="window.location.href='/profile'">
                     ПРИМЕРЫ
                 </button>
-                <button class="btn btn-outline" onclick="window.location.href='/auth'">
-                    ТАРИФЫ
+                <button class="btn btn-outline" onclick="window.location.href='/photoshoot'">
+                    ФОТОСЕССИЯ
                 </button>
-                <button class="btn btn-outline" onclick="window.location.href='#contact'">
-                    КОНТАКТЫ
+            </div>
+
+            <!-- Кнопки авторизации -->
+            <div class="auth-buttons">
+                <button class="btn btn-secondary" onclick="window.location.href='/auth?mode=signup'">
+                    📝 РЕГИСТРАЦИЯ
+                </button>
+                <button class="btn btn-secondary-outline" onclick="window.location.href='/auth'">
+                    🔑 ВОЙТИ
                 </button>
             </div>
         </div>

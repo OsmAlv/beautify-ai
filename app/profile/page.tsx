@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createBrowserClient } from "@supabase/ssr";
+import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 
 interface Generation {
@@ -47,10 +47,6 @@ const modeLabels = {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!
-  );
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -58,6 +54,11 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [selectedGen, setSelectedGen] = useState<Generation | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/");
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -204,14 +205,29 @@ export default function ProfilePage() {
           fontSize: "14px",
           fontWeight: 600,
           letterSpacing: "2px",
-          color: "#2C2C2C",
+          color: "#1A1A1A",
           textDecoration: "none",
         }}>BEAUTIFY.AI</Link>
-        <Link href="/" style={{
-          fontSize: "14px",
-          color: "#2C2C2C",
-          textDecoration: "none",
-        }}>Главная</Link>
+        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+          <Link href="/" style={{
+            fontSize: "14px",
+            color: "#2C2C2C",
+            textDecoration: "none",
+          }}>Главная</Link>
+          <button onClick={handleLogout} style={{
+            padding: "8px 16px",
+            fontSize: "14px",
+            fontWeight: 600,
+            background: "rgba(194, 24, 91, 0.1)",
+            border: "1px solid rgba(194, 24, 91, 0.3)",
+            borderRadius: "50px",
+            color: "#C2185B",
+            cursor: "pointer",
+            fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+          }}>
+            Выход
+          </button>
+        </div>
       </header>
 
       {/* Main Content */}

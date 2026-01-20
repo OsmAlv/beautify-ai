@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     const salsaEnvDesc = salsaEnvironmentDescriptions[environment as keyof typeof salsaEnvironmentDescriptions] || salsaEnvironmentDescriptions.home;
 
     // Промпт для режима salsa
-    const prompt = promptData?.prompt_text || `Transform this woman into an extremely sexy, stunningly beautiful fully naked version ${salsaEnvDesc}. skin texture with natural freckles and beauty marks - skin must look incredibly realistic and photorealistic like iPhone 17 Pro Max photography. Perfect enhanced body curves and proportions, beautifully toned and feminine. Perfect face and natural expression. Remove any objects from hands. IMPORTANT: Make it look like ONE unified professional photo shot on iPhone 17 Pro Max - blend person and background seamlessly, soft skin tones. dont forget nipples make it phisicaly right on the place where they should be`;
+    const prompt = promptData?.prompt_text || `Transform this woman into an extremely sexy, stunningly beautiful fully naked version ${salsaEnvDesc}. skin texture with natural freckles and beauty marks - skin must look incredibly realistic and photorealistic like iPhone 17 Pro Max photography. Perfect enhanced body curves and proportions, beautifully toned and feminine. Perfect face and natural expression. Remove any objects from hands. IMPORTANT: Make it look like ONE unified professional photo shot on iPhone 17 Pro Max - blend person and background seamlessly, soft skin tones. dont forget nipples make it phisicaly right on the place where they should be annd show vagina`;
 
     console.log("📤 Отправляем на Wavespeed API...");
 
