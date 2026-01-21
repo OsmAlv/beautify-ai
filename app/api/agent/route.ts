@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       const getPrompts = (modelType: string) => {
         if (modelType === "nanobana") {
           return {
-            pretty: "Enhance this woman to make her stunningly naturally beautiful. Use advanced neural upscaling. Preserve all authentic skin texture, micro-details, freckles and natural imperfections. Subtly brighten eyes, enhance skin tone naturally, add soft luminous glow. Maintain original facial features, expressions and body proportions. Keep outfit intact. Premium iPhone 17 Pro Max photography. Ultra photorealistic with living, breathing human skin texture. No plastic look.",
+            pretty: "Enhance this woman's natural beauty with subtle, realistic improvements. Gently improve skin clarity while preserving all natural texture, pores, and micro-details. Keep eyes completely natural - do NOT enlarge or distort. Maintain authentic facial proportions and features. Add soft, natural lighting to enhance skin tone. Preserve freckles, beauty marks, and natural imperfections. Keep original eye shape and size exactly as is. Ultra-realistic enhancement with natural skin texture - avoid any smoothing or plastic effect. Professional portrait photography quality.",
             hot: "Transform this woman into an absolutely stunning, enhanced version using advanced AI upscaling.",
           };
         } else {

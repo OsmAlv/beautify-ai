@@ -929,7 +929,7 @@ export default function Photoshoot() {
                     setResults([]);
                     setProgressMessage("");
                     setError("");
-                    setCurrentProgress(0);
+                    setProgressPercent(0);
                   }}
                   className="liquid-glass-btn"
                   style={{
