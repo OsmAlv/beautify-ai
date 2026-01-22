@@ -41,7 +41,7 @@ async function waitForResult(requestId: string, maxAttempts = 120) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { imageUrl, intensity = "pretty", environment = "original", userId, model = "bytedance" } = await request.json();
+    const { imageUrl, intensity = "pretty", environment = "original", userId, model = "bytedance", customPrompt } = await request.json();
 
     // Проверка лимитов если не суперюзер
     if (userId) {
@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
     console.log("🌡️ Интенсивность:", intensity);
     console.log("🌍 Окружение:", environment);
     console.log("🤖 Модель:", model);
+    console.log("✏️ Кастомный промпт:", customPrompt || "не указан");
     console.log("📤 Отправляем на API...");
 
     // Получить промпт из БД
@@ -78,6 +79,10 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
+    let prompt: string;
+    let basePrompt: string = "";
+    
+    // Сначала получаем базовый промпт из БД или используем дефолтный
     const { data: promptData, error: promptError } = await supabase
       .from("prompts")
       .select("prompt_text")
@@ -90,31 +95,49 @@ export async function POST(request: NextRequest) {
       console.warn("⚠️ Промпт не найден в БД, используем дефолтный");
     }
 
-    let prompt: string;
     if (promptData?.prompt_text) {
-      prompt = promptData.prompt_text;
-      console.log("📖 Промпт загружен из БД");
+      basePrompt = promptData.prompt_text;
+      console.log("📖 Базовый промпт загружен из БД");
     } else {
       // Fallback на встроенные промпты
-      const getPrompts = (modelType: string) => {
+      const getPrompts = (modelType: string, env: string) => {
+        const environmentPrompts: Record<string, string> = {
+          original: "",
+          home: " Place her in a cozy home interior setting.",
+          bathtub: " Place her in a luxurious bathroom with a bathtub.",
+          bedroom: " Place her in an elegant bedroom setting.",
+          office: " Place her in a professional office environment.",
+        };
+
+        const envSuffix = intensity === "hot" ? (environmentPrompts[env] || "") : "";
+
         if (modelType === "nanobana") {
           return {
             pretty: "Enhance this woman's natural beauty with subtle, realistic improvements. Gently improve skin clarity while preserving all natural texture, pores, and micro-details. Keep eyes completely natural - do NOT enlarge or distort. Maintain authentic facial proportions and features. Add soft, natural lighting to enhance skin tone. Preserve freckles, beauty marks, and natural imperfections. Keep original eye shape and size exactly as is. Ultra-realistic enhancement with natural skin texture - avoid any smoothing or plastic effect. Professional portrait photography quality.",
-            hot: "Transform this woman into an absolutely stunning, enhanced version using advanced AI upscaling.",
+            hot: `Transform this woman into an absolutely stunningly attractive version of herself. Make her look more attractive and sexy, tits open. Make a sexy confident pose. She can wear elegant lingerie, swimwear or revealing outfit but MUST wear at least underwear/panties on bottom - no full nudity. Important: keep face skin texture and color natural.${envSuffix}`,
           };
         } else {
           return {
             pretty: "Make this woman naturally more beautiful.",
-            hot: "Transform this woman into a stunningly attractive version of herself.",
+            hot: `Transform this woman into a stunningly attractive version of herself. Make her look sexier, tits open. She can wear revealing outfit or lingerie but MUST keep underwear/panties on - no full nudity. Important: keep face skin texture and color natural.${envSuffix}`,
           };
         }
       };
 
-      const prompts = getPrompts(model);
-      prompt = prompts[intensity as keyof typeof prompts] || prompts.pretty;
-      console.log("📖 Используется встроенный дефолтный промпт");
+      const prompts = getPrompts(model, environment || "original");
+      basePrompt = prompts[intensity as keyof typeof prompts] || prompts.pretty;
+      console.log("📖 Используется встроенный дефолтный промпт с окружением:", environment);
     }
 
+    // Если есть кастомный промпт, добавляем его к базовому
+    if (customPrompt && customPrompt.trim()) {
+      prompt = `${basePrompt} ${customPrompt.trim()}`;
+      console.log("✏️ Добавлен кастомный промпт от пользователя");
+    } else {
+      prompt = basePrompt;
+    }
+
+    console.log("📝 Финальный промпт:", prompt);
 
     // Выбираем API в зависимости от модели
     let apiUrl: string;

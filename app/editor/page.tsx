@@ -33,6 +33,7 @@ export default function Home() {
   const [intensity, setIntensity] = useState<"pretty" | "hot">("pretty");
   const [environment, setEnvironment] = useState<"original" | "home" | "bathtub" | "bedroom" | "office">("original");
   const [model, setModel] = useState<"bytedance" | "nanobana">("bytedance");
+  const [customPrompt, setCustomPrompt] = useState<string>("");
   const [unAuthGenerations, setUnAuthGenerations] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -228,12 +229,14 @@ export default function Home() {
           environment,
           model,
           userId: user?.id,
+          customPrompt: customPrompt.trim() || undefined,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        setLoading(false);
         setError(data.error || "Ошибка при обработке");
         return;
       }
@@ -242,10 +245,14 @@ export default function Home() {
       if (data.imageUrl) {
         setResult(data.imageUrl);
         addToHistory(image, data.imageUrl); // Добавляем в историю
+        setLoading(false); // Останавливаем загрузку сразу после получения результата
+        console.log("✅ Результат получен, loading установлен в false");
       }
       // Если есть generation_id - показываем плейсхолдер с ссылкой на профиль
       else if (data.generation_id) {
         setResult(`generation_${data.generation_id}`);
+        setLoading(false); // Останавливаем загрузку сразу после получения generation_id
+        console.log("✅ Generation ID получен, loading установлен в false");
       }
 
       // Если неавторизован - увеличить счётчик локально
@@ -271,7 +278,9 @@ export default function Home() {
       }
     } catch {
       setError("Ошибка при отправке");
+      console.log("❌ Ошибка в catch, setLoading(false) будет вызван в finally");
     } finally {
+      console.log("🔄 Finally блок: устанавливаем setLoading(false)");
       setLoading(false);
     }
   }
@@ -954,7 +963,10 @@ export default function Home() {
                 ].map((mode) => (
                   <button
                     key={mode.id}
-                    onClick={() => setIntensity(mode.id as "pretty" | "hot")}
+                    onClick={() => {
+                      setIntensity(mode.id as "pretty" | "hot");
+                      if (mode.id === "hot") setModel("bytedance");
+                    }}
                     disabled={mode.id !== "pretty" && !userData}
                     className={intensity === mode.id ? "liquid-glass-btn-dark" : "liquid-glass-btn"}
                     style={{
@@ -987,12 +999,12 @@ export default function Home() {
               </h3>
               <div style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: intensity === "hot" ? "1fr" : "1fr 1fr",
                 gap: "10px",
               }}>
                 {[
                   { id: "bytedance", label: "ByteDance", desc: "Быстро" },
-                  { id: "nanobana", label: "NanoBana", desc: "Качество+" },
+                  ...(intensity === "pretty" ? [{ id: "nanobana", label: "NanoBana", desc: "Качество+" }] : []),
                 ].map((m) => (
                   <button
                     key={m.id}
@@ -1047,16 +1059,19 @@ export default function Home() {
                   ].map((env) => (
                     <button
                       key={env.id}
-                      onClick={() => setEnvironment(env.id as "original" | "home" | "bathtub" | "bedroom" | "office")}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setEnvironment(env.id as "original" | "home" | "bathtub" | "bedroom" | "office");
+                      }}
+                      type="button"
+                      className={environment === env.id ? "liquid-glass-btn-dark" : "liquid-glass-btn"}
                       style={{
                         padding: "10px 8px",
-                        border: environment === env.id ? "2px solid #667eea" : "2px solid #e0e0e0",
-                        background: environment === env.id ? "#f0f3ff" : "white",
                         borderRadius: "8px",
-                        cursor: "pointer",
                         fontSize: "11px",
                         fontWeight: "600",
-                        transition: "all 0.3s ease",
+                        border: "none",
                       }}
                     >
                       {env.label}
@@ -1065,6 +1080,38 @@ export default function Home() {
                 </div>
               </div>
             )}
+
+            {/* Custom Prompt */}
+            <div style={{ marginBottom: "28px" }}>
+              <h3 style={{
+                fontSize: "13px",
+                fontWeight: "700",
+                color: "#1a1a2e",
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+                marginBottom: "12px",
+              }}>
+                ✏️ Кастомный промпт (опционально)
+              </h3>
+              <textarea
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                placeholder="Введите свой промпт для AI или оставьте пустым для использования стандартного..."
+                style={{
+                  width: "100%",
+                  minHeight: "80px",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  border: "2px solid #e0e0e0",
+                  fontSize: "13px",
+                  fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+                  resize: "vertical",
+                  transition: "border-color 0.3s ease",
+                }}
+                onFocus={(e) => e.currentTarget.style.borderColor = "#667eea"}
+                onBlur={(e) => e.currentTarget.style.borderColor = "#e0e0e0"}
+              />
+            </div>
 
             {/* Image Upload */}
             <div style={{ marginBottom: "20px" }}>
@@ -1180,7 +1227,7 @@ export default function Home() {
           {loading ? (
             "⏳ Обработка..."
           ) : result ? (
-            "✨ Создать с новыми параметрами"
+            "✨ Сгенерировать заново"
           ) : (
             "✨ Преобразовать магией AI"
           )}
@@ -1306,7 +1353,7 @@ export default function Home() {
                   opacity: loading ? 0.5 : 1,
                 }}
               >
-                {loading ? "⏳ Переобработка..." : "🔄 Заново с теми же параметрами"}
+                {loading ? "⏳ Обработка..." : "🔄 Сгенерировать заново"}
               </button>
             </div>
           </div>

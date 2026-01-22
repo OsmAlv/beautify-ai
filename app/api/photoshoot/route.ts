@@ -303,16 +303,20 @@ Real photograph look, not illustration, CGI, 3D render, or stylized image.`;
       );
     }
 
-    // Сохраняем в БД
-    await supabase
-      .from("generation_logs")
-      .insert({
-        user_id: userId,
-        mode: "photoshoot",
-        environment: environment,
-        cost: totalCost,
-        image_url: results[0], // Сохраняем первое фото как основное
-      });
+    // Сохраняем каждое фото как отдельную запись в БД
+    const insertPromises = results.map((imageUrl, index) => 
+      supabase
+        .from("generation_logs")
+        .insert({
+          user_id: userId,
+          mode: "photoshoot",
+          environment: environment,
+          cost: index === 0 ? totalCost : 0, // Стоимость только на первое фото
+          image_url: imageUrl,
+        })
+    );
+
+    await Promise.all(insertPromises);
 
     return NextResponse.json({
       success: true,

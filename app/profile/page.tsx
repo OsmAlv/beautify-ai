@@ -51,6 +51,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [generations, setGenerations] = useState<Generation[]>([]);
+  const [displayedGenerations, setDisplayedGenerations] = useState(10);
   const [loading, setLoading] = useState(true);
   const [selectedGen, setSelectedGen] = useState<Generation | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
@@ -102,6 +103,13 @@ export default function ProfilePage() {
   }, [router, supabase]);
 
   const handleViewImage = async (gen: Generation) => {
+    // Если изображение уже есть, просто показываем его
+    if (gen.image_url) {
+      setSelectedGen(gen);
+      return;
+    }
+
+    // Если нет, пытаемся загрузить
     setImageLoading(true);
     try {
       const response = await fetch(`/api/generations/${gen.id}`);
@@ -118,8 +126,9 @@ export default function ProfilePage() {
         ...gen,
         error: "Не удалось загрузить изображение",
       });
+    } finally {
+      setImageLoading(false);
     }
-    setImageLoading(false);
   };
 
   const formatDate = (dateString: string) => {
@@ -141,15 +150,76 @@ export default function ProfilePage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontFamily: "'Inter', sans-serif",
+        fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+        position: "relative",
+        overflow: "hidden",
       }}>
+        {/* Декоративные блобы */}
         <div style={{
-          fontSize: "18px",
-          fontWeight: 600,
-          color: "#1A1A1A",
+          position: "absolute",
+          width: "600px",
+          height: "600px",
+          background: "radial-gradient(circle, #FFB3BA 0%, #FFDFBA 100%)",
+          borderRadius: "50%",
+          filter: "blur(120px)",
+          opacity: 0.4,
+          top: "-150px",
+          left: "-150px",
+        }} />
+        <div style={{
+          position: "absolute",
+          width: "500px",
+          height: "500px",
+          background: "radial-gradient(circle, #BAE1FF 0%, #BAFFC9 100%)",
+          borderRadius: "50%",
+          filter: "blur(120px)",
+          opacity: 0.4,
+          bottom: "-100px",
+          right: "-100px",
+        }} />
+
+        <div style={{
+          background: "rgba(255, 255, 255, 0.5)",
+          backdropFilter: "blur(20px)",
+          borderRadius: "24px",
+          padding: "48px 64px",
+          textAlign: "center",
+          border: "1px solid rgba(255, 255, 255, 0.5)",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.08)",
+          position: "relative",
+          zIndex: 1,
         }}>
-          Загрузка профиля...
+          <div style={{
+            width: "60px",
+            height: "60px",
+            border: "4px solid #C2185B",
+            borderTopColor: "transparent",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+            margin: "0 auto 24px",
+          }} />
+          <div style={{
+            fontSize: "20px",
+            fontWeight: 600,
+            color: "#1A1A1A",
+            marginBottom: "8px",
+          }}>
+            Загрузка профиля...
+          </div>
+          <div style={{
+            fontSize: "14px",
+            color: "#666",
+          }}>
+            Подготовка ваших данных
+          </div>
         </div>
+        
+        <style>{`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     );
   }
@@ -194,12 +264,15 @@ export default function ProfilePage() {
       {/* Header */}
       <header style={{
         position: "relative",
-        zIndex: 10,
+        zIndex: selectedGen ? 0 : 10,
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         padding: "20px 40px",
         marginBottom: "20px",
+        opacity: selectedGen ? 0 : 1,
+        pointerEvents: selectedGen ? "none" : "auto",
+        transition: "opacity 0.3s ease",
       }}>
         <Link href="/" style={{
           fontSize: "14px",
@@ -257,9 +330,9 @@ export default function ProfilePage() {
           }}>
             <div>
               <h1 style={{
-                fontFamily: "'Playfair Display', serif",
+                fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
                 fontSize: "32px",
-                fontWeight: 400,
+                fontWeight: 700,
                 lineHeight: 1.2,
                 color: "#1A1A1A",
                 letterSpacing: "-1px",
@@ -271,6 +344,7 @@ export default function ProfilePage() {
                 fontSize: "14px",
                 color: "#666",
                 margin: 0,
+                fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
               }}>
                 {user?.email}
               </p>
@@ -287,6 +361,7 @@ export default function ProfilePage() {
               fontWeight: 600,
               textDecoration: "none",
               transition: "all 0.3s ease",
+              fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
             }}>
               ← На главную
             </Link>
@@ -410,13 +485,14 @@ export default function ProfilePage() {
               gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
               gap: "20px",
             }}>
-              {generations.map((gen) => (
+              {generations.slice(0, displayedGenerations).map((gen) => (
                 <div key={gen.id} style={{
                   background: "rgba(255, 255, 255, 0.5)",
                   borderRadius: "16px",
                   overflow: "hidden",
                   border: "1px solid rgba(26, 26, 26, 0.1)",
                   transition: "all 0.3s ease",
+                  fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
                 }}>
                   <div
                     style={{
@@ -428,6 +504,9 @@ export default function ProfilePage() {
                       justifyContent: "center",
                       cursor: "pointer",
                       position: "relative",
+                      backgroundImage: gen.image_url ? `url(${gen.image_url})` : "none",
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
                     }}
                     onClick={() => handleViewImage(gen)}
                   >
@@ -451,6 +530,7 @@ export default function ProfilePage() {
                         fontSize: "14px",
                         fontWeight: 600,
                         cursor: "pointer",
+                        fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
                       }}>
                         {imageLoading ? "Загрузка..." : "Просмотр"}
                       </button>
@@ -505,6 +585,42 @@ export default function ProfilePage() {
               ))}
             </div>
           )}
+          
+          {/* Load More Button */}
+          {!loading && generations.length > displayedGenerations && (
+            <div style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "32px",
+            }}>
+              <button
+                onClick={() => setDisplayedGenerations(prev => prev + 10)}
+                style={{
+                  padding: "14px 32px",
+                  background: "rgba(255, 255, 255, 0.5)",
+                  backdropFilter: "blur(10px)",
+                  border: "2px solid rgba(26, 26, 26, 0.2)",
+                  borderRadius: "50px",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  color: "#1A1A1A",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.7)";
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.5)";
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                }}
+              >
+                Загрузить еще 10 генераций
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Modal */}
@@ -546,8 +662,21 @@ export default function ProfilePage() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  transition: "all 0.3s ease",
+                  zIndex: 10,
                 }}
-                onClick={() => setSelectedGen(null)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedGen(null);
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(0, 0, 0, 0.2)";
+                  (e.currentTarget as HTMLElement).style.transform = "scale(1.1)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(0, 0, 0, 0.1)";
+                  (e.currentTarget as HTMLElement).style.transform = "scale(1)";
+                }}
               >
                 ✕
               </button>
@@ -614,43 +743,63 @@ export default function ProfilePage() {
                       padding: "16px",
                       borderRadius: "12px",
                       fontSize: "14px",
+                      fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
                     }}>
-                      <p style={{ marginBottom: "8px" }}>
+                      <p style={{ marginBottom: "8px", color: "#1A1A1A" }}>
                         <strong>Режим:</strong> {modeLabels[selectedGen.mode]}
                       </p>
                       {selectedGen.environment && (
-                        <p style={{ marginBottom: "8px" }}>
+                        <p style={{ marginBottom: "8px", color: "#1A1A1A" }}>
                           <strong>Окружение:</strong> {selectedGen.environment}
                         </p>
                       )}
-                      <p style={{ marginBottom: "8px" }}>
+                      <p style={{ marginBottom: "8px", color: "#1A1A1A" }}>
                         <strong>Дата:</strong> {formatDate(selectedGen.created_at)}
                       </p>
                       {selectedGen.age_days !== undefined && (
-                        <p style={{ marginBottom: "8px" }}>
+                        <p style={{ marginBottom: "8px", color: "#1A1A1A" }}>
                           <strong>Возраст:</strong> {selectedGen.age_days} дней назад
                         </p>
                       )}
-                      {selectedGen.original_image_url && (
+                      <div style={{ display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }}>
                         <a
-                          href={selectedGen.original_image_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          href={selectedGen.image_url}
+                          download={`beautify-${selectedGen.mode}-${selectedGen.id}.jpg`}
                           style={{
                             display: "inline-block",
-                            marginTop: "12px",
-                            padding: "8px 16px",
+                            padding: "10px 20px",
                             background: "#1A1A1A",
                             color: "white",
                             borderRadius: "20px",
                             textDecoration: "none",
-                            fontSize: "13px",
+                            fontSize: "14px",
                             fontWeight: 600,
+                            fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
                           }}
                         >
-                          📥 Скачать оригинал
+                          📥 Скачать результат
                         </a>
-                      )}
+                        {selectedGen.original_image_url && (
+                          <a
+                            href={selectedGen.original_image_url}
+                            download={`beautify-original-${selectedGen.id}.jpg`}
+                            style={{
+                              display: "inline-block",
+                              padding: "10px 20px",
+                              background: "rgba(26, 26, 26, 0.1)",
+                              color: "#1A1A1A",
+                              border: "1px solid rgba(26, 26, 26, 0.2)",
+                              borderRadius: "20px",
+                              textDecoration: "none",
+                              fontSize: "14px",
+                              fontWeight: 600,
+                              fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+                            }}
+                          >
+                            📥 Скачать оригинал
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ) : (
