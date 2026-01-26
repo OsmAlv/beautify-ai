@@ -30,8 +30,15 @@ export default function LanguageSelector() {
           srcSet={`https://flagcdn.com/w40/${languages[language].flag}.png 2x`}
           width="20"
           height="15"
-          alt=""
-          style={{ objectFit: 'cover' }}
+          alt={languages[language].name}
+          style={{ 
+            objectFit: 'cover',
+            borderRadius: '2px',
+            display: 'block',
+          }}
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
         />
         <span>{languages[language].name}</span>
         <span style={{ fontSize: '10px' }}>▼</span>
@@ -93,8 +100,15 @@ export default function LanguageSelector() {
                 srcSet={`https://flagcdn.com/w40/${lang.flag}.png 2x`}
                 width="20"
                 height="15"
-                alt=""
-                style={{ objectFit: 'cover' }}
+                alt={lang.name}
+                style={{ 
+                  objectFit: 'cover',
+                  borderRadius: '2px',
+                  display: 'block',
+                }}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
               />
               <span>{lang.name}</span>
             </button>
