@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useTranslation } from "@/contexts/LanguageContext";
 
-export default function AuthPage() {
+function AuthPageContent() {
   const { t } = useTranslation('auth');
   const searchParams = useSearchParams();
   const [isSignUp, setIsSignUp] = useState(false);
@@ -601,5 +601,13 @@ export default function AuthPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AuthPageContent />
+    </Suspense>
   );
 }
