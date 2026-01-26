@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import LanguageSelector from "@/components/LanguageSelector";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Generation {
   id: string;
@@ -47,6 +49,7 @@ const modeLabels = {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { t } = useLanguage();
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -62,45 +65,70 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
+    let mounted = true;
+    
     const checkAuth = async () => {
+      console.log("🔍 Начинаем проверку авторизации...");
+      
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
+      console.log("📊 Сессия:", session ? "есть" : "нет");
+
       if (!session) {
+        console.log("❌ Нет сессии, редирект на /auth");
         router.push("/auth");
         return;
       }
 
+      if (!mounted) {
+        console.log("⚠️ Компонент размонтирован");
+        return;
+      }
+
+      console.log("✅ Устанавливаем пользователя");
       setUser({ id: session.user.id, email: session.user.email || "" });
 
       // Получаем данные пользователя из таблицы users
+      console.log("📥 Загружаем профиль из БД...");
       const { data: profile } = await supabase
         .from("users")
         .select("*")
         .eq("id", session.user.id)
         .single();
 
-      if (profile) {
+      if (profile && mounted) {
+        console.log("✅ Профиль загружен:", profile.username);
         setUserData(profile);
       }
 
       // Получаем историю генераций
+      console.log("📥 Загружаем историю генераций...");
       const { data: gens } = await supabase
         .from("generation_logs")
         .select("*")
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: false });
 
-      if (gens) {
+      if (gens && mounted) {
+        console.log("✅ Загружено генераций:", gens.length);
         setGenerations(gens);
       }
 
-      setLoading(false);
+      if (mounted) {
+        console.log("✅ Загрузка завершена, отключаем лоадер");
+        setLoading(false);
+      }
     };
 
     checkAuth();
-  }, [router, supabase]);
+    
+    return () => {
+      console.log("🔄 Размонтирование компонента");
+      mounted = false;
+    };
+  }, []);
 
   const handleViewImage = async (gen: Generation) => {
     // Если изображение уже есть, просто показываем его
@@ -204,13 +232,13 @@ export default function ProfilePage() {
             color: "#1A1A1A",
             marginBottom: "8px",
           }}>
-            Загрузка профиля...
+            {t('profile.loading')}
           </div>
           <div style={{
             fontSize: "14px",
             color: "#666",
           }}>
-            Подготовка ваших данных
+            {t('profile.preparingData')}
           </div>
         </div>
         
@@ -261,47 +289,7 @@ export default function ProfilePage() {
         zIndex: 0,
       }} />
 
-      {/* Header */}
-      <header style={{
-        position: "relative",
-        zIndex: selectedGen ? 0 : 10,
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "20px 40px",
-        marginBottom: "20px",
-        opacity: selectedGen ? 0 : 1,
-        pointerEvents: selectedGen ? "none" : "auto",
-        transition: "opacity 0.3s ease",
-      }}>
-        <Link href="/" style={{
-          fontSize: "14px",
-          fontWeight: 600,
-          letterSpacing: "2px",
-          color: "#1A1A1A",
-          textDecoration: "none",
-        }}>BEAUTIFY.AI</Link>
-        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-          <Link href="/" style={{
-            fontSize: "14px",
-            color: "#2C2C2C",
-            textDecoration: "none",
-          }}>Главная</Link>
-          <button onClick={handleLogout} style={{
-            padding: "8px 16px",
-            fontSize: "14px",
-            fontWeight: 600,
-            background: "rgba(194, 24, 91, 0.1)",
-            border: "1px solid rgba(194, 24, 91, 0.3)",
-            borderRadius: "50px",
-            color: "#C2185B",
-            cursor: "pointer",
-            fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-          }}>
-            Выход
-          </button>
-        </div>
-      </header>
+      {/* Header is rendered globally */}
 
       {/* Main Content */}
       <main style={{
@@ -338,7 +326,7 @@ export default function ProfilePage() {
                 letterSpacing: "-1px",
                 margin: "0 0 8px 0",
               }}>
-                Мой профиль
+                {t('profile.title')}
               </h1>
               <p style={{
                 fontSize: "14px",
@@ -349,7 +337,35 @@ export default function ProfilePage() {
                 {user?.email}
               </p>
             </div>
-            <Link href="/" style={{
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={handleLogout}
+                style={{
+                  padding: "10px 20px",
+                  background: "rgba(255, 255, 255, 0.15)",
+                  backdropFilter: "blur(10px)",
+                  color: "#C2185B",
+                  border: "2px solid rgba(194, 24, 91, 0.3)",
+                  borderRadius: "20px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                  transition: "all 0.3s ease",
+                  fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(194, 24, 91, 0.1)";
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.15)";
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                }}
+              >
+                {t('profile.logout')}
+              </button>
+              <Link href="/" style={{
               padding: "10px 20px",
               background: "rgba(255, 255, 255, 0.15)",
               backdropFilter: "blur(10px)",
@@ -362,9 +378,11 @@ export default function ProfilePage() {
               textDecoration: "none",
               transition: "all 0.3s ease",
               fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-            }}>
-              ← На главную
-            </Link>
+                display: "inline-block",
+              }}>
+                ← {t('profile.backToHome')}
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -386,7 +404,7 @@ export default function ProfilePage() {
               padding: "20px",
               textAlign: "center",
             }}>
-              <div style={{ fontSize: "14px", color: "#666", marginBottom: "8px" }}>Баланс</div>
+              <div style={{ fontSize: "14px", color: "#666", marginBottom: "8px" }}>{t('profile.balance')}</div>
               <div style={{ fontSize: "28px", fontWeight: 700, color: "#1A1A1A" }}>{userData.nippies_balance}</div>
             </div>
             <div style={{
@@ -399,7 +417,7 @@ export default function ProfilePage() {
               padding: "20px",
               textAlign: "center",
             }}>
-              <div style={{ fontSize: "14px", color: "#666", marginBottom: "8px" }}>🎀 Pretty (осталось)</div>
+              <div style={{ fontSize: "14px", color: "#666", marginBottom: "8px" }}>{t('profile.prettyRemaining')}</div>
               <div style={{ fontSize: "28px", fontWeight: 700, color: "#1A1A1A" }}>{userData.pretty_generations_remaining}</div>
             </div>
             <div style={{
@@ -412,7 +430,7 @@ export default function ProfilePage() {
               padding: "20px",
               textAlign: "center",
             }}>
-              <div style={{ fontSize: "14px", color: "#666", marginBottom: "8px" }}>Hot (осталось)</div>
+              <div style={{ fontSize: "14px", color: "#666", marginBottom: "8px" }}>{t('profile.hotRemaining')}</div>
               <div style={{ fontSize: "28px", fontWeight: 700, color: "#1A1A1A" }}>{userData.hot_generations_remaining}</div>
             </div>
             <div style={{
@@ -425,7 +443,7 @@ export default function ProfilePage() {
               padding: "20px",
               textAlign: "center",
             }}>
-              <div style={{ fontSize: "14px", color: "#666", marginBottom: "8px" }}>Всего генераций</div>
+              <div style={{ fontSize: "14px", color: "#666", marginBottom: "8px" }}>{t('profile.totalGenerations')}</div>
               <div style={{ fontSize: "28px", fontWeight: 700, color: "#1A1A1A" }}>{generations.length}</div>
             </div>
           </div>
@@ -447,7 +465,7 @@ export default function ProfilePage() {
             color: "#1A1A1A",
             marginBottom: "25px",
           }}>
-            История генераций
+            {t('profile.generationHistory')}
           </h2>
 
           {generations.length === 0 ? (
@@ -460,7 +478,7 @@ export default function ProfilePage() {
                 color: "#666",
                 marginBottom: "20px",
               }}>
-                У вас ещё нет генераций
+                {t('profile.noGenerations')}
               </p>
               <Link href="/" style={{
                 display: "inline-block",
@@ -476,7 +494,7 @@ export default function ProfilePage() {
                 textTransform: "uppercase",
                 transition: "all 0.3s ease",
               }}>
-                Начать создавать
+                {t('profile.startCreating')}
               </Link>
             </div>
           ) : (
@@ -532,7 +550,7 @@ export default function ProfilePage() {
                         cursor: "pointer",
                         fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
                       }}>
-                        {imageLoading ? "Загрузка..." : "Просмотр"}
+                        {imageLoading ? t('profile.loading') : t('profile.view')}
                       </button>
                     </div>
                   </div>
@@ -577,7 +595,7 @@ export default function ProfilePage() {
                         fontWeight: 600,
                         marginTop: "4px",
                       }}>
-                        Стоимость: {gen.cost} nippies
+                        {t('profile.cost')}: {gen.cost} nippies
                       </div>
                     )}
                   </div>
@@ -617,7 +635,7 @@ export default function ProfilePage() {
                   (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
                 }}
               >
-                Загрузить еще 10 генераций
+                {t('profile.loadMore')}
               </button>
             </div>
           )}
@@ -686,16 +704,15 @@ export default function ProfilePage() {
                   <div style={{ textAlign: "center", padding: "40px 20px" }}>
                     <div style={{ fontSize: "64px", marginBottom: "20px" }}>⏰</div>
                     <h3 style={{ fontSize: "24px", fontWeight: 600, marginBottom: "12px", color: "#1A1A1A" }}>
-                      Изображение удалено
+                      {t('profile.imageDeleted')}
                     </h3>
                     <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px" }}>
-                      Wavespeed API хранит изображения только 7 дней. Эта генерация
-                      была создана {selectedGen.age_days} дней назад и больше не доступна.
+                      {t('profile.imageExpired', { days: selectedGen.age_days })}
                     </p>
                     {selectedGen.original_image_url && (
                       <div style={{ marginTop: "30px" }}>
                         <p style={{ fontSize: "13px", fontWeight: 600, marginBottom: "12px", color: "#1A1A1A" }}>
-                          Оригинальное изображение:
+                          {t('profile.originalImage')}:
                         </p>
                         <img
                           src={selectedGen.original_image_url}
@@ -709,13 +726,13 @@ export default function ProfilePage() {
                   <div style={{ textAlign: "center", padding: "40px 20px" }}>
                     <div style={{ fontSize: "64px", marginBottom: "20px" }}>❌</div>
                     <h3 style={{ fontSize: "24px", fontWeight: 600, marginBottom: "12px", color: "#1A1A1A" }}>
-                      Ошибка загрузки
+                      {t('profile.loadingError')}
                     </h3>
                     <p style={{ fontSize: "14px", color: "#666" }}>{selectedGen.error}</p>
                     {selectedGen.original_image_url && (
                       <div style={{ marginTop: "30px" }}>
                         <p style={{ fontSize: "13px", fontWeight: 600, marginBottom: "12px", color: "#1A1A1A" }}>
-                          Оригинальное изображение:
+                          {t('profile.originalImage')}:
                         </p>
                         <img
                           src={selectedGen.original_image_url}
@@ -746,19 +763,19 @@ export default function ProfilePage() {
                       fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
                     }}>
                       <p style={{ marginBottom: "8px", color: "#1A1A1A" }}>
-                        <strong>Режим:</strong> {modeLabels[selectedGen.mode]}
+                        <strong>{t('profile.mode')}:</strong> {modeLabels[selectedGen.mode]}
                       </p>
                       {selectedGen.environment && (
                         <p style={{ marginBottom: "8px", color: "#1A1A1A" }}>
-                          <strong>Окружение:</strong> {selectedGen.environment}
+                          <strong>{t('profile.environment')}:</strong> {selectedGen.environment}
                         </p>
                       )}
                       <p style={{ marginBottom: "8px", color: "#1A1A1A" }}>
-                        <strong>Дата:</strong> {formatDate(selectedGen.created_at)}
+                        <strong>{t('profile.date')}:</strong> {formatDate(selectedGen.created_at)}
                       </p>
                       {selectedGen.age_days !== undefined && (
                         <p style={{ marginBottom: "8px", color: "#1A1A1A" }}>
-                          <strong>Возраст:</strong> {selectedGen.age_days} дней назад
+                          <strong>{t('profile.age')}:</strong> {selectedGen.age_days} {t('profile.daysAgo')}
                         </p>
                       )}
                       <div style={{ display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }}>
@@ -777,7 +794,7 @@ export default function ProfilePage() {
                             fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
                           }}
                         >
-                          📥 Скачать результат
+                          📥 {t('profile.downloadResult')}
                         </a>
                         {selectedGen.original_image_url && (
                           <a
@@ -796,7 +813,7 @@ export default function ProfilePage() {
                               fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
                             }}
                           >
-                            📥 Скачать оригинал
+                            📥 {t('profile.downloadOriginal')}
                           </a>
                         )}
                       </div>
@@ -804,7 +821,7 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div style={{ textAlign: "center", padding: "40px", fontSize: "18px", color: "#666" }}>
-                    ⏳ Загрузка...
+                    ⏳ {t('profile.loading')}
                   </div>
                 )}
               </div>

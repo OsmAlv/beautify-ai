@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
+import { useTranslation } from "@/contexts/LanguageContext";
+import LanguageSelector from "@/components/LanguageSelector";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface UserData {
@@ -17,6 +19,7 @@ interface UserData {
 }
 
 export default function GoonAI() {
+  const { t } = useTranslation('editor');
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [image, setImage] = useState<string | null>(null);
@@ -276,6 +279,8 @@ export default function GoonAI() {
 
   return (
     <main style={styles.main}>
+      {/* Header is rendered globally */}
+
       {/* Hero Section */}
       <div style={{
         textAlign: "center",

@@ -47,20 +47,59 @@ export function useLanguage() {
   if (!context) {
     throw new Error('useLanguage must be used within LanguageProvider');
   }
-  return context;
+  
+  const [translations, setTranslations] = useState<any>({});
+  
+  useEffect(() => {
+    // Динамический импорт переводов
+    try {
+      const { getTranslation } = require('@/lib/translations');
+      setTranslations({ getTranslation });
+    } catch (error) {
+      console.error('Failed to load translations:', error);
+    }
+  }, []);
+  
+  const t = (key: string, params?: Record<string, any>) => {
+    if (translations.getTranslation) {
+      const [section, ...keyParts] = key.split('.');
+      const translationKey = keyParts.join('.');
+      let text = translations.getTranslation(context.language, section, translationKey);
+      
+      // Заменяем параметры вида {{param}} на значения
+      if (params) {
+        Object.keys(params).forEach(param => {
+          text = text.replace(new RegExp(`{{${param}}}`, 'g'), params[param]);
+        });
+      }
+      
+      return text;
+    }
+    return key;
+  };
+
+  return { ...context, t };
 }
 
 export function useTranslation(section: string) {
   const { language } = useLanguage();
+  const [translations, setTranslations] = useState<any>({});
   
-  const t = (key: string) => {
+  useEffect(() => {
     // Динамический импорт переводов
     try {
       const { getTranslation } = require('@/lib/translations');
-      return getTranslation(language, section, key);
-    } catch {
-      return key;
+      setTranslations({ getTranslation });
+    } catch (error) {
+      console.error('Failed to load translations:', error);
     }
+  }, []);
+  
+  const t = (key: string) => {
+    if (translations.getTranslation) {
+      return translations.getTranslation(language, section, key);
+    }
+    return key;
   };
 
   return { t, language };

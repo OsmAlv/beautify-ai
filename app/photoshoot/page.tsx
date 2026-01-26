@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useTranslation } from "@/contexts/LanguageContext";
+import LanguageSelector from "@/components/LanguageSelector";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface UserData {
@@ -14,6 +16,7 @@ interface UserData {
 }
 
 export default function Photoshoot() {
+  const { t } = useTranslation('photoshoot');
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [images, setImages] = useState<string[]>([]);
@@ -107,12 +110,12 @@ export default function Photoshoot() {
 
   async function generatePhotoshoot() {
     if (images.length === 0) {
-      setError("Загрузите хотя бы одну фотографию");
+      setError(t('uploadError'));
       return;
     }
 
     if (!user) {
-      setError("Для создания фотосессии нужна авторизация");
+      setError(t('authRequired'));
       return;
     }
 
@@ -120,7 +123,7 @@ export default function Photoshoot() {
     const totalCost = photoCount * costPerPhoto;
 
     if (userData && !userData.is_superuser && userData.nippies_balance < totalCost) {
-      setError(`Недостаточно nippies. Нужно: ${totalCost}, у вас: ${userData.nippies_balance}`);
+      setError(`${t('insufficientBalance')} ${totalCost}, ${t('youHave')}: ${userData.nippies_balance}`);
       return;
     }
 
@@ -128,7 +131,7 @@ export default function Photoshoot() {
     setError(null);
     setResults([]);
     setProgressPercent(0);
-    setProgressMessage("🚀 Отправка запроса на сервер...");
+    setProgressMessage(t('progressSending'));
 
     // Симуляция прогресса
     let progressInterval: NodeJS.Timeout | null = null;
@@ -152,10 +155,10 @@ export default function Photoshoot() {
       });
 
       setProgressPercent(5);
-      setProgressMessage("⏳ Обработка запроса AI...");
+      setProgressMessage(t('progressProcessing'));
 
       setTimeout(() => {
-        setProgressMessage("🎨 Генерируем фотосессию...");
+        setProgressMessage(t('progressGenerating'));
       }, 2000);
 
       const response = await fetch("/api/photoshoot", {
@@ -194,7 +197,7 @@ export default function Photoshoot() {
         
         // Если получено меньше фото, чем запрошено, показываем предупреждение
         if (data.results.length < photoCount) {
-          setError(`Предупреждение: сгенерировано только ${data.results.length} из ${photoCount} фото`);
+          setError(`${t('progressWarning')} ${data.results.length} ${t('progressWarningOf')} ${photoCount} ${t('progressWarningPhotos')}`);
         }
         
         // Очистить сообщение через 2 секунды
@@ -269,88 +272,7 @@ export default function Photoshoot() {
         zIndex: 0,
       }} />
 
-      {/* Header */}
-      <header style={{
-        position: "relative",
-        zIndex: 10,
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: isMobile ? "20px 30px" : "30px 80px",
-      }}>
-        <Link href="/" style={{
-          fontSize: "14px",
-          fontWeight: 600,
-          letterSpacing: "2px",
-          color: "#1A1A1A",
-          textDecoration: "none",
-        }}>BEAUTIFY.AI</Link>
-        
-        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <Link href="/" style={{
-            fontSize: "14px",
-            color: "#2C2C2C",
-            textDecoration: "none",
-          }}>Главная</Link>
-          
-          {user ? (
-            <Link href="/profile" style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              padding: "8px 16px",
-              background: "rgba(255, 255, 255, 0.5)",
-              borderRadius: "50px",
-              border: "1px solid rgba(26, 26, 26, 0.1)",
-              textDecoration: "none",
-            }}>
-              <div style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "white",
-                fontWeight: 600,
-                fontSize: "14px",
-              }}>
-                {userData?.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "U"}
-              </div>
-              <div style={{
-                fontSize: "14px",
-                fontWeight: 600,
-                color: "#1A1A1A",
-              }}>
-                {userData?.username || user.email?.split('@')[0] || "Профиль"}
-              </div>
-            </Link>
-          ) : (
-            <div style={{ display: "flex", gap: "12px" }}>
-              <Link href="/auth" className="liquid-glass-btn" style={{
-                padding: "8px 20px",
-                borderRadius: "50px",
-                fontSize: "13px",
-                fontWeight: 600,
-                color: "#1A1A1A",
-                textDecoration: "none",
-              }}>
-                Войти
-              </Link>
-              <Link href="/auth" className="liquid-glass-btn-dark" style={{
-                padding: "8px 20px",
-                borderRadius: "50px",
-                fontSize: "13px",
-                fontWeight: 600,
-                textDecoration: "none",
-              }}>
-                Регистрация
-              </Link>
-            </div>
-          )}
-        </div>
-      </header>
+      {/* Header is rendered globally */}
 
       <main style={{
         position: "relative",
@@ -373,7 +295,7 @@ export default function Photoshoot() {
             letterSpacing: "-1px",
             margin: "0 0 15px 0",
           }}>
-            AI Фотосессия
+            {t('title')}
           </h1>
           <p style={{
             fontSize: isMobile ? "16px" : "20px",
@@ -382,7 +304,7 @@ export default function Photoshoot() {
             color: "#4A4A4A",
             margin: "0",
           }}>
-            Профессиональная фотосессия за $5 вместо $100
+            {t('description')}
           </p>
         </div>
 
@@ -415,14 +337,14 @@ export default function Photoshoot() {
                   color: "#1A1A1A",
                   margin: "0 0 5px 0",
                 }}>
-                  Создать фотосессию
+                  {t('createTitle')}
                 </h2>
                 <p style={{
                   fontSize: "14px",
                   color: "#666",
                   margin: 0,
                 }}>
-                  {photoCount} фото • {photoCount * 50} nippies (~${(photoCount * 50 * 0.0027).toFixed(2)})
+                  {photoCount} {t('photosCount')} • {photoCount * 50} nippies (~${(photoCount * 50 * 0.0027).toFixed(2)})
                 </p>
               </div>
               <div style={{
@@ -486,7 +408,7 @@ export default function Photoshoot() {
                     <polyline points="17 8 12 3 7 8"/>
                     <line x1="12" y1="3" x2="12" y2="15"/>
                   </svg>
-                  {images.length > 0 ? `Добавить еще (${images.length})` : "Upload photos"}
+                  {images.length > 0 ? `${t('addMore')} (${images.length})` : t('uploadPhotos')}
                 </div>
               </label>
               <div style={{
@@ -505,10 +427,10 @@ export default function Photoshoot() {
                   <span>⭐</span>
                   <span>⭐</span>
                   <span>⭐</span>
-                  <span style={{ marginLeft: "8px", fontWeight: 500 }}>by 150K+ users</span>
+                  <span style={{ marginLeft: "8px", fontWeight: 500 }}>{t('byUsers')}</span>
                 </div>
                 <div style={{ color: "#8e8e93", fontWeight: 400, fontSize: "13px", marginTop: "4px" }}>
-                  💡 Для лучшего результата добавьте 2-4 фото с разных ракурсов
+                  {t('tip')}
                 </div>
               </div>
             </div>
@@ -523,7 +445,7 @@ export default function Photoshoot() {
                   textAlign: "center",
                   color: "#1A1A1A",
                 }}>
-                  Загруженные фото ({images.length})
+                  {t('uploadedPhotosTitle')} ({images.length})
                 </h3>
                 <div style={{
                   display: "grid",
@@ -586,7 +508,7 @@ export default function Photoshoot() {
               marginBottom: "8px",
               color: "#1A1A1A",
             }}>
-              🎬 Выберите окружение
+              {t('selectEnvironment')}
             </h3>
             <p style={{
               fontSize: "12px",
@@ -594,7 +516,7 @@ export default function Photoshoot() {
               marginBottom: "16px",
               lineHeight: 1.5,
             }}>
-              Выберите место для фотосессии
+              {t('selectPlace')}
             </p>
             <div style={{
               display: "grid",
@@ -602,10 +524,10 @@ export default function Photoshoot() {
               gap: "12px",
             }}>
               {[
-                { id: "studio", label: "Студия", icon: "🎥", desc: "Чистый фон" },
-                { id: "nature", label: "Природа", icon: "🌿", desc: "На улице" },
-                { id: "city", label: "Город", icon: "🏙️", desc: "Урбан стиль" },
-                { id: "beach", label: "Пляж", icon: "🏖️", desc: "У моря" },
+                { id: "studio", label: t('studio'), icon: "🎬", desc: t('studioDesc') },
+                { id: "nature", label: t('nature'), icon: "🌿", desc: t('natureDesc') },
+                { id: "city", label: t('city'), icon: "🏙️", desc: t('cityDesc') },
+                { id: "beach", label: t('beach'), icon: "🏖️", desc: t('beachDesc') },
               ].map((env) => (
                 <button
                   key={env.id}
@@ -643,7 +565,7 @@ export default function Photoshoot() {
               marginBottom: "8px",
               color: "#1A1A1A",
             }}>
-              📸 Количество фото
+              {t('photoCount')}
             </h3>
             <p style={{
               fontSize: "12px",
@@ -651,7 +573,7 @@ export default function Photoshoot() {
               marginBottom: "16px",
               lineHeight: 1.5,
             }}>
-              Чем больше фото, тем больше вариантов
+              {t('morePhotos')}
             </p>
             <input
               type="range"
@@ -682,7 +604,7 @@ export default function Photoshoot() {
               color: "#1A1A1A",
               marginTop: "15px",
             }}>
-              {photoCount} фото
+              {photoCount} {t('photosCount')}
             </div>
           </div>
 
@@ -694,7 +616,7 @@ export default function Photoshoot() {
               marginBottom: "8px",
               color: "#1A1A1A",
             }}>
-              ✨ Описание фотосессии (необязательно)
+              {t('descriptionLabel')}
             </h3>
             <p style={{
               fontSize: "12px",
@@ -702,12 +624,12 @@ export default function Photoshoot() {
               marginBottom: "16px",
               lineHeight: 1.5,
             }}>
-              Опишите желаемый стиль, позу, одежду или настроение фотосессии
+              {t('descriptionText')}
             </p>
             <textarea
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
-              placeholder="Опишите желаемую позу, стиль, одежду, настроение... Например: 'Красный шарф, черное пальто, зимний ботанический сад'"
+              placeholder={t('descriptionPlaceholder')}
               style={{
                 width: "100%",
                 minHeight: "120px",
@@ -743,7 +665,7 @@ export default function Photoshoot() {
               transition: "all 0.3s ease",
             }}
           >
-            {loading ? "⏳ СОЗДАЕМ ФОТОСЕССИЮ..." : "🎨 СОЗДАТЬ ФОТОСЕССИЮ"}
+            {loading ? t('creating') : t('createPhotoshoot')}
           </button>
 
           {/* Estimated Time */}
@@ -755,7 +677,7 @@ export default function Photoshoot() {
               color: "#666",
               fontWeight: 500,
             }}>
-              ⏱️ Примерное время генерации: <strong>{Math.ceil(photoCount * 0.3)}-{Math.ceil(photoCount * 0.5)} минут</strong>
+              ⏱️ {t('estimatedTime')} <strong>{Math.ceil(photoCount * 0.3)}-{Math.ceil(photoCount * 0.5)} {t('minutes')}</strong>
             </div>
           )}
 
@@ -830,7 +752,7 @@ export default function Photoshoot() {
                 fontSize: "12px",
                 color: "#999",
               }}>
-                Генерируем {photoCount} {photoCount === 1 ? 'фото' : photoCount < 5 ? 'фото' : 'фото'}...
+                {t('generatingPhotos')}
               </div>
             </div>
           )}
@@ -881,7 +803,7 @@ export default function Photoshoot() {
                 marginBottom: "25px",
                 color: "#1A1A1A",
               }}>
-                Ваша фотосессия готова! 🎉
+                {t('photoshootReady')}
               </h3>
               <div style={{
                 display: "grid",
@@ -916,7 +838,7 @@ export default function Photoshoot() {
                         border: "none",
                       }}
                     >
-                      Скачать фото {index + 1}
+                      {t('downloadPhoto')} {index + 1}
                     </a>
                   </div>
                 ))}
@@ -946,7 +868,7 @@ export default function Photoshoot() {
                     boxShadow: "0 4px 16px rgba(194, 24, 91, 0.15)",
                   }}
                 >
-                  ✨ Создать еще одну фотосессию
+                  {t('createAnother')}
                 </button>
               </div>
             </div>
@@ -965,7 +887,7 @@ export default function Photoshoot() {
               fontSize: "14px",
               borderRadius: "50px",
             }}>
-              ← Вернуться на главную
+              {t('backToHome')}
             </Link>
           </div>
         </div>

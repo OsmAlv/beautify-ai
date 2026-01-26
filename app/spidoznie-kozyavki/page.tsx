@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { useTranslation } from "@/contexts/LanguageContext";
+import LanguageSelector from "@/components/LanguageSelector";
 
 interface UserData {
   id: string;
@@ -27,6 +29,7 @@ const ADMIN_EMAIL = "osmanovalev33@gmail.com";
 const ADMIN_PASSWORD = "1816424Alev!@";
 
 export default function AdminSecret() {
+  const { t } = useTranslation('photoshoot');
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");

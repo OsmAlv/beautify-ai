@@ -94,15 +94,6 @@ a {
   transform: translateY(-50%);
 }
 
-.header {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 30px 80px;
-}
-
 .logo {
   font-size: 14px;
   font-weight: 600;
@@ -218,7 +209,7 @@ a {
   gap: 10px;
   z-index: 20;
   padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: 20px;
@@ -376,10 +367,6 @@ a {
 }
 
 @media (max-width: 768px) {
-  .header {
-    padding: 20px 30px;
-  }
-  
   .nav {
     gap: 15px;
   }

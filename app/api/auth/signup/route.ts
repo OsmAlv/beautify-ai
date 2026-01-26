@@ -45,7 +45,10 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         email,
         password,
-        email_confirm: true, // Auto-confirm email so user can login immediately
+        email_confirm: true, // Автоподтверждаем, проверку по OTP делаем отдельно
+        user_metadata: {
+          username: username || email.split("@")[0],
+        },
       }),
     });
 
@@ -83,6 +86,10 @@ export async function POST(request: NextRequest) {
         const { createClient } = await import("@supabase/supabase-js");
         const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
         
+        // Удаляем старый профиль с таким email если есть (на случай если юзер был удален из auth но остался в users)
+        await supabaseAdmin.from("users").delete().eq("email", email);
+        
+        // Создаем новый профиль
         const { error: profileError, data: profileData } = await supabaseAdmin
           .from("users")
           .insert({
@@ -97,7 +104,6 @@ export async function POST(request: NextRequest) {
 
         if (profileError) {
           console.error("❌ Profile creation failed:", profileError);
-          // Don't fail - auth succeeded, profile creation is secondary
         } else {
           console.log("✅ User profile created:", profileData);
         }
@@ -107,10 +113,29 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("✅ Signup completed");
+    
+    // Отправляем OTP код на email
+    try {
+      const { createClient } = await import("@supabase/supabase-js");
+      const supabaseClient = createClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!);
+      
+      await supabaseClient.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false, // Пользователь уже создан
+        }
+      });
+      
+      console.log("✅ OTP code sent to email");
+    } catch (otpError) {
+      console.error("❌ Failed to send OTP:", otpError);
+    }
+    
     return NextResponse.json(
       {
         user: userData,
-        message: "Signup successful - email confirmed",
+        message: "Please check your email for verification code",
+        needsVerification: true,
       },
       { status: 200 }
     );

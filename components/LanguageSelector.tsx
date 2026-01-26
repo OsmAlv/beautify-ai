@@ -25,7 +25,14 @@ export default function LanguageSelector() {
           fontWeight: '600',
         }}
       >
-        <span style={{ fontSize: '20px' }}>{languages[language].flag}</span>
+        <img 
+          src={`https://flagcdn.com/w20/${languages[language].flag}.png`}
+          srcSet={`https://flagcdn.com/w40/${languages[language].flag}.png 2x`}
+          width="20"
+          height="15"
+          alt=""
+          style={{ objectFit: 'cover' }}
+        />
         <span>{languages[language].name}</span>
         <span style={{ fontSize: '10px' }}>▼</span>
       </button>
@@ -44,7 +51,7 @@ export default function LanguageSelector() {
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
             border: '1px solid rgba(255, 255, 255, 0.5)',
             minWidth: '180px',
-            zIndex: 1000,
+            zIndex: 10000,
           }}
         >
           {Object.entries(languages).map(([code, lang]) => (
@@ -81,7 +88,14 @@ export default function LanguageSelector() {
                 }
               }}
             >
-              <span style={{ fontSize: '20px' }}>{lang.flag}</span>
+              <img 
+                src={`https://flagcdn.com/w20/${lang.flag}.png`}
+                srcSet={`https://flagcdn.com/w40/${lang.flag}.png 2x`}
+                width="20"
+                height="15"
+                alt=""
+                style={{ objectFit: 'cover' }}
+              />
               <span>{lang.name}</span>
             </button>
           ))}

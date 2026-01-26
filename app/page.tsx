@@ -52,57 +52,7 @@ export default function LandingPage() {
       <div className="bg-blob bg-blob-2" />
       <div className="bg-blob bg-blob-3" />
 
-      {/* Шапка */}
-      <header className="header">
-        <div className="logo" style={{ color: "#1A1A1A" }}>BEAUTIFY.AI</div>
-        <nav className="nav">
-          <LanguageSelector />
-          {!user ? (
-            <>
-              <a href="/auth?mode=signup" className="nav-link nav-link-signup">Регистрация</a>
-              <a href="/auth" className="nav-link">Войти</a>
-            </>
-          ) : (
-            <button 
-              className="nav-link-profile"
-              onClick={() => router.push('/profile')}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                padding: "8px 16px",
-                background: "rgba(255, 255, 255, 0.5)",
-                borderRadius: "50px",
-                border: "1px solid rgba(26, 26, 26, 0.1)",
-                cursor: "pointer",
-                textDecoration: "none",
-              }}
-            >
-              <div style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "white",
-                fontWeight: 600,
-                fontSize: "14px",
-              }}>
-                {user.email?.[0]?.toUpperCase() || "U"}
-              </div>
-              <div style={{
-                fontSize: "14px",
-                fontWeight: 600,
-                color: "#1A1A1A",
-              }}>
-                {user.email?.split('@')[0] || "Профиль"}
-              </div>
-            </button>
-          )}
-        </nav>
-      </header>
+      {/* Header is rendered globally */}
 
       {/* Основной контент */}
       <main className="main-content">
@@ -134,14 +84,14 @@ export default function LandingPage() {
         {/* Правая колонка - Текст */}
         <div className="content-section">
           <h1 className="main-title">
-            {t('title').split('\n').map((line, i) => (
-              <span key={i}>{line}{i === 0 && <br />}</span>
-            ))}
+              {t('title').split('\n').map((line: string, i: number) => (
+                <span key={i}>{line}{i === 0 && <br />}</span>
+              ))}
           </h1>
           <p className="main-description">
-            {t('description').split('\n').map((line, i) => (
-              <span key={i}>{line}{i === 0 && <br />}</span>
-            ))}
+              {t('description').split('\n').map((line: string, i: number) => (
+                <span key={i}>{line}{i === 0 && <br />}</span>
+              ))}
           </p>
 
           <div className="buttons-group">
