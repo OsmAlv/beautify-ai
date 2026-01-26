@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins, Space_Grotesk, Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import "./mobile.css";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -45,7 +46,9 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className={`${poppins.variable} ${spaceGrotesk.variable} ${playfair.variable} ${inter.variable}`} style={{ fontFamily: "var(--font-inter)" }}>
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

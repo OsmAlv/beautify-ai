@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { useTranslation } from "@/contexts/LanguageContext";
+import LanguageSelector from "@/components/LanguageSelector";
 
 export default function LandingPage() {
   const router = useRouter();
+  const { t } = useTranslation('landing');
   const [currentSlide, setCurrentSlide] = useState(0);
   const [user, setUser] = useState<any>(null);
   
@@ -53,7 +56,7 @@ export default function LandingPage() {
       <header className="header">
         <div className="logo" style={{ color: "#1A1A1A" }}>BEAUTIFY.AI</div>
         <nav className="nav">
-          <a href="/" className="nav-link">Главная</a>
+          <LanguageSelector />
           {!user ? (
             <>
               <a href="/auth?mode=signup" className="nav-link nav-link-signup">Регистрация</a>
@@ -131,22 +134,25 @@ export default function LandingPage() {
         {/* Правая колонка - Текст */}
         <div className="content-section">
           <h1 className="main-title">
-            Привет!<br />Я — AI-сервис красоты.
+            {t('title').split('\n').map((line, i) => (
+              <span key={i}>{line}{i === 0 && <br />}</span>
+            ))}
           </h1>
           <p className="main-description">
-            Мы подчёркиваем твою естественную красоту<br />
-            с помощью искусственного интеллекта.
+            {t('description').split('\n').map((line, i) => (
+              <span key={i}>{line}{i === 0 && <br />}</span>
+            ))}
           </p>
 
           <div className="buttons-group">
+            <button className="btn btn-primary liquid-glass-btn-dark" onClick={() => router.push('/photoshoot')}>
+              {t('btnPhotoshoot')}
+            </button>
             <button className="btn btn-primary liquid-glass-btn-dark" onClick={() => router.push('/editor')}>
-              ПОПРОБОВАТЬ
+              {t('btnTry')}
             </button>
             <button className="btn btn-secondary liquid-glass-btn" onClick={() => router.push('/examples')}>
-              ПРИМЕРЫ
-            </button>
-            <button className="btn btn-secondary liquid-glass-btn" onClick={() => router.push('/photoshoot')}>
-              ФОТОСЕССИЯ
+              {t('btnExamples')}
             </button>
           </div>
         </div>
