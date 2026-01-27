@@ -56,7 +56,7 @@ export default function Header() {
           fontWeight: 700,
           color: '#1A1A1A',
           fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
-        }}>BEAUTIFY.AI</div>
+        }}>MAKEMEAPHOTO.COM</div>
       </Link>
 
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -122,7 +122,7 @@ export default function Header() {
                   fontWeight: 600,
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                }}>Регистрация</button>
+                }}>{t('header.signup')}</button>
               </a>
               <a href="/auth" style={{ textDecoration: 'none' }}>
                 <button style={{
@@ -135,7 +135,7 @@ export default function Header() {
                   fontWeight: 600,
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                }}>Войти</button>
+                }}>{t('header.login')}</button>
               </a>
             </>
           )

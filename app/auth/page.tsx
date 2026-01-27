@@ -146,8 +146,6 @@ function AuthPageContent() {
           return;
         }
 
-        console.log("✅ Пользователь создан:", result.user?.id);
-
         setSuccess("✅ Регистрация успешна! Проверьте свою почту - мы отправили 6-значный код.");
         setShowVerification(true);
         setVerificationEmail(email);
@@ -164,12 +162,10 @@ function AuthPageContent() {
 
         if (signInError) {
           setError(signInError.message);
-          console.error("SignIn error:", signInError);
           setLoading(false);
           return;
         }
 
-        console.log("✅ Вход успешен");
         setSuccess("✅ Успешный вход!");
         
         // Небольшая задержка чтобы показать сообщение об успехе
@@ -180,7 +176,6 @@ function AuthPageContent() {
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "Неизвестная ошибка";
       setError(`❌ ${errorMsg}`);
-      console.error("Auth error:", err);
     } finally {
       setLoading(false);
     }
@@ -249,7 +244,7 @@ function AuthPageContent() {
           color: "#C2185B",
           letterSpacing: "-0.5px",
         }}>
-          Beautify.AI
+          MakeMeAPhoto
         </h1>
 
         <p style={{

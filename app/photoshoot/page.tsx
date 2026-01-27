@@ -114,16 +114,27 @@ export default function Photoshoot() {
       return;
     }
 
-    if (!user) {
+    // Проверяем авторизацию
+    const { data: { session } } = await supabase.auth.getSession();
+    const currentUser = session?.user || user;
+    
+    if (!currentUser) {
       setError(t('authRequired'));
       return;
     }
 
+    // Загружаем актуальные данные пользователя
+    const { data: currentUserData } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", currentUser.id)
+      .single();
+
     const costPerPhoto = 50; // 50 nippies за фото
     const totalCost = photoCount * costPerPhoto;
 
-    if (userData && !userData.is_superuser && userData.nippies_balance < totalCost) {
-      setError(`${t('insufficientBalance')} ${totalCost}, ${t('youHave')}: ${userData.nippies_balance}`);
+    if (currentUserData && !currentUserData.is_superuser && currentUserData.nippies_balance < totalCost) {
+      setError(`${t('insufficientBalance')} ${totalCost}, ${t('youHave')}: ${currentUserData.nippies_balance}`);
       return;
     }
 
@@ -151,7 +162,7 @@ export default function Photoshoot() {
         hasImages: images.length > 0,
         imageCount: images.length,
         hasCustomPrompt: !!customPrompt,
-        userId: user.id
+        userId: currentUser.id
       });
 
       setProgressPercent(5);
@@ -170,7 +181,7 @@ export default function Photoshoot() {
           photoCount,
           environment,
           model,
-          userId: user.id,
+          userId: currentUser.id,
         }),
       });
 

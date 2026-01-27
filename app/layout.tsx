@@ -30,8 +30,15 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Beautify.AI - Преврати фото в 3D",
-  description: "AI-powered photo transformation to 3D",
+  title: "MakeMeAPhoto - AI Photo Enhancement",
+  description: "Transform your photos with AI-powered beauty enhancement",
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({

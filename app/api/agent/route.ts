@@ -18,19 +18,13 @@ async function waitForResult(requestId: string, maxAttempts = 120) {
     // Статус находится в dat a.data.status
     const status = data.data?.status;
 
-    console.log(`⏳ Попытка ${i + 1}/${maxAttempts}: статус = ${status}`);
-
     if (status === "completed") {
-      console.log("✅ Готово! Outputs:", data.data?.outputs);
       return data.data;
     }
 
     if (status === "failed") {
-      console.error("❌ Обработка не удалась:", data.data?.error);
       throw new Error(`AI обработка не удалась: ${data.data?.error}`);
     }
-
-    console.log(`📊 Текущий статус: ${status}`);
 
     // Ждем 3 секунды перед следующей проверкой
     await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -58,19 +52,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (!WAVESPEED_API_KEY) {
-      console.error("❌ API ключ не найден в переменных окружения");
       return NextResponse.json(
         { error: "API ключ не настроен" },
         { status: 500 }
       );
     }
-
-    console.log("🔑 API ключ загружен, длина:", WAVESPEED_API_KEY.length);
-    console.log("🌡️ Интенсивность:", intensity);
-    console.log("🌍 Окружение:", environment);
-    console.log("🤖 Модель:", model);
-    console.log("✏️ Кастомный промпт:", customPrompt || "не указан");
-    console.log("📤 Отправляем на API...");
 
     // Получить промпт из БД
     const { createClient } = await import("@supabase/supabase-js");
@@ -92,12 +78,11 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (promptError || !promptData) {
-      console.warn("⚠️ Промпт не найден в БД, используем дефолтный");
+      // Промпт не найден, используем дефолтный
     }
 
     if (promptData?.prompt_text) {
       basePrompt = promptData.prompt_text;
-      console.log("📖 Базовый промпт загружен из БД");
     } else {
       // Fallback на встроенные промпты
       const getPrompts = (modelType: string, env: string) => {
@@ -113,31 +98,27 @@ export async function POST(request: NextRequest) {
 
         if (modelType === "nanobana") {
           return {
-            pretty: "Enhance this woman's natural beauty with subtle, realistic improvements. Gently improve skin clarity while preserving all natural texture, pores, and micro-details. Keep eyes completely natural - do NOT enlarge or distort. Maintain authentic facial proportions and features. Add soft, natural lighting to enhance skin tone. Preserve freckles, beauty marks, and natural imperfections. Keep original eye shape and size exactly as is. Ultra-realistic enhancement with natural skin texture - avoid any smoothing or plastic effect. Professional portrait photography quality.",
-            hot: `Transform this woman into an absolutely stunningly attractive version of herself. Make her look more attractive and sexy, tits open. Make a sexy confident pose. She can wear elegant lingerie, swimwear or revealing outfit but MUST wear at least underwear/panties on bottom - no full nudity. Important: keep face skin texture and color natural.${envSuffix}`,
+            pretty: "Enhance natural beauty with subtle improvements. Improve skin clarity while preserving texture and natural details. Maintain facial proportions and features. Add soft natural lighting. Keep natural skin texture. Professional portrait quality.",
+            hot: `make this girl sexy. Keep face expressions. outfit more open and sexy"${envSuffix}`,
           };
         } else {
           return {
-            pretty: "Make this woman naturally more beautiful.",
-            hot: `Transform this woman into a stunningly attractive version of herself. Make her look sexier, tits open. She can wear revealing outfit or lingerie but MUST keep underwear/panties on - no full nudity. Important: keep face skin texture and color natural.${envSuffix}`,
+            pretty: "Enhance natural beauty with subtle improvements.",
+            hot: `make this girl sexy. Keep face expressions. outfit more open and sexy"${envSuffix}`,
           };
         }
       };
 
       const prompts = getPrompts(model, environment || "original");
       basePrompt = prompts[intensity as keyof typeof prompts] || prompts.pretty;
-      console.log("📖 Используется встроенный дефолтный промпт с окружением:", environment);
     }
 
     // Если есть кастомный промпт, добавляем его к базовому
     if (customPrompt && customPrompt.trim()) {
       prompt = `${basePrompt} ${customPrompt.trim()}`;
-      console.log("✏️ Добавлен кастомный промпт от пользователя");
     } else {
       prompt = basePrompt;
     }
-
-    console.log("📝 Финальный промпт:", prompt);
 
     // Выбираем API в зависимости от модели
     let apiUrl: string;
@@ -145,13 +126,9 @@ export async function POST(request: NextRequest) {
     let resultImageUrl: string | null = null;
 
     if (model === "nanobana") {
-      // NanoBana модель через Wavespeed API
       apiUrl = WAVESPEED_NANOBANA_URL;
-      console.log("🚀 Используем NanoBana модель (Wavespeed)");
     } else {
-      // ByteDance модель (текущий)
       apiUrl = WAVESPEED_BYTEDANCE_URL;
-      console.log("🎨 Используем ByteDance модель (Wavespeed)");
     }
 
     // Отправляем запрос к Wavespeed API (для обеих моделей)
@@ -170,12 +147,8 @@ export async function POST(request: NextRequest) {
     });
 
     const editData = await editResponse.json();
-    
-    console.log("📨 Ответ от Wavespeed:", editResponse.status);
-    console.log("📊 ПОЛНЫЙ ОТВЕТ:", JSON.stringify(editData, null, 2));
 
     if (!editResponse.ok) {
-      console.error("❌ Wavespeed API ошибка:", editData);
       return NextResponse.json(
         { error: `API ошибка (${editResponse.status}): ${editData.message || editData.error || "Неизвестная ошибка"}` },
         { status: editResponse.status }
@@ -183,7 +156,6 @@ export async function POST(request: NextRequest) {
     }
 
     requestIdFromResponse = editData.data?.id;
-    console.log("✅ Получен requestId:", requestIdFromResponse);
     
     if (!requestIdFromResponse) {
       return NextResponse.json(
@@ -193,9 +165,6 @@ export async function POST(request: NextRequest) {
     }
     
     const result = await waitForResult(requestIdFromResponse);
-    
-    console.log("🎉 Финальный результат получен:");
-    console.log("Весь объект result:", JSON.stringify(result, null, 2));
 
     // Извлекаем URL из массива outputs
     resultImageUrl = result.outputs?.[0];
@@ -226,7 +195,6 @@ export async function POST(request: NextRequest) {
           .single();
 
         if (error) {
-          console.error("❌ Ошибка сохранения в БД:", error);
           // Fallback: вернём image_url если не удалось сохранить
           return NextResponse.json({
             reply: "Изображение обработано, но не сохранилось в историю",
@@ -234,7 +202,6 @@ export async function POST(request: NextRequest) {
             status: "success",
           });
         } else {
-          console.log("✅ Сохранено в БД с ID:", data?.id);
           return NextResponse.json({
             reply: "Изображение успешно обработано!",
             generation_id: data?.id, // Возвращаем ID генерации
@@ -243,7 +210,7 @@ export async function POST(request: NextRequest) {
           });
         }
       } catch (dbError) {
-        console.error("❌ Ошибка при записи в БД:", dbError);
+        // Ошибка записи в БД
       }
     }
 
@@ -254,7 +221,6 @@ export async function POST(request: NextRequest) {
       status: "success",
     });
   } catch (error) {
-    console.error("❌ Backend ошибка:", error);
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Неизвестная ошибка сервера",

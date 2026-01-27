@@ -28,6 +28,30 @@ export const translations = {
       nl: 'Prijzen',
       tr: 'Fiyatlar',
     },
+    signup: {
+      en: 'Sign Up',
+      ru: 'Регистрация',
+      fr: 'S\'inscrire',
+      de: 'Registrieren',
+      it: 'Registrati',
+      es: 'Registrarse',
+      pt: 'Registrar',
+      pl: 'Zarejestruj się',
+      nl: 'Registreren',
+      tr: 'Kayıt ol',
+    },
+    login: {
+      en: 'Login',
+      ru: 'Войти',
+      fr: 'Connexion',
+      de: 'Anmelden',
+      it: 'Accedi',
+      es: 'Iniciar sesión',
+      pt: 'Entrar',
+      pl: 'Zaloguj się',
+      nl: 'Inloggen',
+      tr: 'Giriş',
+    },
   },
 
   // Landing Page
@@ -1410,8 +1434,8 @@ export const translations = {
   // Auth Page
   auth: {
     welcome: {
-      en: 'Welcome to Beautify',
-      ru: 'Добро пожаловать в Beautify',
+      en: 'Welcome to MakeMeAPhoto',
+      ru: 'Добро пожаловать в MakeMeAPhoto',
       fr: 'Bienvenue sur Beautify',
       de: 'Willkommen bei Beautify',
       it: 'Benvenuto su Beautify',

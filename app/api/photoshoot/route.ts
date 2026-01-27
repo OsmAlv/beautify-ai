@@ -177,33 +177,8 @@ export async function POST(request: NextRequest) {
     // Переводим кастомный промпт на английский, если он на русском
     const translatedPrompt = customPrompt ? await translateToEnglish(customPrompt) : "";
 
-    // Улучшенный базовый промпт с акцентом на сохранение лица
-    const basePrompt = `ABSOLUTE PRIORITY: Keep the face 100% identical to the uploaded photo. The face MUST NOT change at all.
-
-FACE IDENTITY LOCK:
-- Use the uploaded photo as the ONLY reference for facial identity
-- The face structure, proportions, features MUST remain exactly the same
-- Same nose, same eyes, same lips, same jawline, same cheekbones, same forehead, same chin
-- Same facial proportions and distances between features
-- Same age, same ethnicity, same unique characteristics
-- Zero tolerance for facial changes - face must be pixel-perfect identical
-
-Generate a highly photorealistic professional photoshoot in ${envDesc}, as if captured with a high-end full-frame DSLR camera.
-
-ALLOWED CHANGES ONLY:
-- Background and environment
-- Clothing and accessories
-- Lighting and camera angle
-- Body pose and position
-- Facial expression (smile, serious, etc.) - but facial features stay identical
-
-FORBIDDEN CHANGES:
-- NO changes to face structure, shape, or features
-- NO changes to nose, eyes, lips, jawline, cheekbones
-- NO changes to facial proportions or identity
-
-Natural lighting, realistic shadows, accurate skin texture (pores, fine details, natural imperfections), true-to-life colors.
-Real photograph look, not illustration, CGI, 3D render, or stylized image.${translatedPrompt ? `\n\nADDITIONAL REQUIREMENTS: ${translatedPrompt}` : ""}`;
+    // Простой промпт для избежания content moderation
+    const basePrompt = `Professional portrait photograph in ${envDesc}. Natural lighting, high quality photography, realistic details.${translatedPrompt ? ` ${translatedPrompt}` : ""}`;
     
     const finalPrompt = basePrompt;
 
@@ -266,6 +241,54 @@ Real photograph look, not illustration, CGI, 3D render, or stylized image.${tran
           statusText: editResponse.statusText,
           error: editData
         });
+        
+        // Проверяем, является ли ошибка content moderation
+        const errorMessage = editData?.error || editData?.message || '';
+        if (errorMessage.toLowerCase().includes('sensitive') || 
+            errorMessage.toLowerCase().includes('flagged') ||
+            errorMessage.toLowerCase().includes('content')) {
+          console.log(`⚠️ Content moderation triggered for photo ${i + 1}, trying with simpler prompt...`);
+          
+          // Пробуем еще раз с очень простым промптом
+          const simplePrompt = `Professional portrait photograph in ${envDesc}. Natural lighting, high quality.`;
+          
+          const retryResponse = await fetch(apiUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${WAVESPEED_API_KEY}`,
+            },
+            body: JSON.stringify({
+              enable_base64_output: false,
+              images: imageUrls,
+              prompt: simplePrompt,
+              quality: "high",
+              input_fidelity: "high",
+              output_format: "jpeg",
+              guidance_scale: 10.0,
+              strength: 0.3,
+              num_inference_steps: 50,
+            }),
+            signal: AbortSignal.timeout(60000),
+          });
+          
+          const retryData = await retryResponse.json();
+          if (retryResponse.ok && retryData.data?.id) {
+            console.log(`✅ Retry successful for photo ${i + 1}`);
+            try {
+              const result = await waitForResult(retryData.data.id);
+              const resultImageUrl = result.outputs?.[0];
+              if (resultImageUrl) {
+                results.push(resultImageUrl);
+                console.log(`✅ Фото ${i + 1} готово после retry!`);
+                continue;
+              }
+            } catch (retryError) {
+              console.error(`❌ Retry failed for photo ${i + 1}:`, retryError);
+            }
+          }
+        }
+        
         continue; // Пропускаем ошибочное фото
       }
 
