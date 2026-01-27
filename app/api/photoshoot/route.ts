@@ -175,12 +175,9 @@ export async function POST(request: NextRequest) {
     const envDesc = environmentDescriptions[environment as keyof typeof environmentDescriptions] || environmentDescriptions.studio;
 
     // Переводим кастомный промпт на английский, если он на русском
-    const translatedPrompt = customPrompt ? await translateToEnglish(customPrompt) : null;
+    const translatedPrompt = customPrompt ? await translateToEnglish(customPrompt) : "";
 
     // Улучшенный базовый промпт с акцентом на сохранение лица
-    // Если есть кастомный промпт, он идет первым как главная инструкция
-    const sceneDescription = translatedPrompt || `in ${envDesc}`;
-    
     const basePrompt = `ABSOLUTE PRIORITY: Keep the face 100% identical to the uploaded photo. The face MUST NOT change at all.
 
 FACE IDENTITY LOCK:
@@ -191,7 +188,7 @@ FACE IDENTITY LOCK:
 - Same age, same ethnicity, same unique characteristics
 - Zero tolerance for facial changes - face must be pixel-perfect identical
 
-Generate a highly photorealistic professional photoshoot ${sceneDescription}, as if captured with a high-end full-frame DSLR camera.
+Generate a highly photorealistic professional photoshoot in ${envDesc}, as if captured with a high-end full-frame DSLR camera.
 
 ALLOWED CHANGES ONLY:
 - Background and environment
@@ -206,7 +203,7 @@ FORBIDDEN CHANGES:
 - NO changes to facial proportions or identity
 
 Natural lighting, realistic shadows, accurate skin texture (pores, fine details, natural imperfections), true-to-life colors.
-Real photograph look, not illustration, CGI, 3D render, or stylized image.`;
+Real photograph look, not illustration, CGI, 3D render, or stylized image.${translatedPrompt ? `\n\nADDITIONAL REQUIREMENTS: ${translatedPrompt}` : ""}`;
     
     const finalPrompt = basePrompt;
 
