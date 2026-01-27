@@ -180,7 +180,6 @@ export default function Photoshoot() {
           customPrompt,
           photoCount,
           environment,
-          model,
           userId: currentUser.id,
         }),
       });
