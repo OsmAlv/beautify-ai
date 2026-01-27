@@ -49,7 +49,7 @@ const modeLabels = {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -161,7 +161,24 @@ export default function ProfilePage() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("ru-RU", {
+    
+    // Маппинг языков на локали для форматирования дат
+    const localeMap: Record<string, string> = {
+      en: "en-US",
+      ru: "ru-RU",
+      es: "es-ES",
+      fr: "fr-FR",
+      de: "de-DE",
+      it: "it-IT",
+      pt: "pt-PT",
+      pl: "pl-PL",
+      tr: "tr-TR",
+      ar: "ar-SA",
+    };
+    
+    const locale = localeMap[language] || "en-US";
+    
+    return date.toLocaleDateString(locale, {
       year: "numeric",
       month: "short",
       day: "numeric",
