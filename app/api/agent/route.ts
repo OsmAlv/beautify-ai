@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const WAVESPEED_API_KEY = process.env.WAVESPEED_API_KEY;
-const WAVESPEED_BYTEDANCE_URL = "https://api.wavespeed.ai/api/v3/bytedance/seedream-v4/edit";
-const WAVESPEED_NANOBANA_URL = "https://api.wavespeed.ai/api/v3/google/nano-banana-pro/edit"; // NanoBana модель через Wavespeed
+const WAVESPEED_API_URL = "https://api.wavespeed.ai/api/v3/bytedance/seedream-v4.5/edit";
 const WAVESPEED_RESULT_URL = "https://api.wavespeed.ai/api/v3/predictions";
 
 async function waitForResult(requestId: string, maxAttempts = 120) {
@@ -35,7 +34,8 @@ async function waitForResult(requestId: string, maxAttempts = 120) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { imageUrl, intensity = "pretty", environment = "original", userId, model = "bytedance", customPrompt } = await request.json();
+    const { imageUrl, intensity = "pretty", environment = "original", userId, customPrompt } = await request.json();
+    const model = "bytedance"; // Всегда используем bytedance модель
 
     // Проверка лимитов если не суперюзер
     if (userId) {
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     const { data: promptData, error: promptError } = await supabase
       .from("prompts")
       .select("prompt_text")
-      .eq("model", model)
+      .eq("model", "bytedance")
       .eq("intensity", intensity)
       .eq("environment", intensity === "hot" ? (environment || "original") : null)
       .single();
@@ -99,12 +99,12 @@ export async function POST(request: NextRequest) {
         if (modelType === "nanobana") {
           return {
             pretty: "Enhance natural beauty with subtle improvements. Improve skin clarity while preserving texture and natural details. Maintain facial proportions and features. Add soft natural lighting. Keep natural skin texture. Professional portrait quality.",
-            hot: `make this girl sexy. Keep face expressions. outfit more open and sexy"${envSuffix}`,
+            hot: `Make this person sexy. Outfit more open and sexy but no nudity. Create glamorous portrait. Elegant styling. Professional quality. Keep person fully clothed in elegant outfit. No nudity.${envSuffix}`,
           };
         } else {
           return {
             pretty: "Enhance natural beauty with subtle improvements.",
-            hot: `make this girl sexy. Keep face expressions. outfit more open and sexy"${envSuffix}`,
+            hot: `Make this person sexy. Outfit more open and sexy but no nudity. Create glamorous portrait. Elegant styling. Professional quality. Keep person fully clothed in elegant outfit. No nudity.${envSuffix}`,
           };
         }
       };
@@ -121,18 +121,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Выбираем API в зависимости от модели
-    let apiUrl: string;
     let requestIdFromResponse: string | null = null;
     let resultImageUrl: string | null = null;
 
-    if (model === "nanobana") {
-      apiUrl = WAVESPEED_NANOBANA_URL;
-    } else {
-      apiUrl = WAVESPEED_BYTEDANCE_URL;
-    }
-
-    // Отправляем запрос к Wavespeed API (для обеих моделей)
-    const editResponse = await fetch(apiUrl, {
+    // Отправляем запрос к Wavespeed API
+    const editResponse = await fetch(WAVESPEED_API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

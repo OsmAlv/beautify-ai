@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const WAVESPEED_API_KEY = process.env.WAVESPEED_API_KEY;
-const WAVESPEED_NANOBANA_PRO_URL = "https://api.wavespeed.ai/api/v3/google/nano-banana-pro/edit";
+const WAVESPEED_API_URL = "https://api.wavespeed.ai/api/v3/bytedance/seedream-v4.5/edit";
 const WAVESPEED_RESULT_URL = "https://api.wavespeed.ai/api/v3/predictions";
 
 async function waitForResult(requestId: string, maxAttempts = 120) {
@@ -64,7 +64,7 @@ async function translateToEnglish(text: string): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
-    const { imageUrls, customPrompt, photoCount = 5, environment = "studio", model = "nanobana", userId } = await request.json();
+    const { imageUrls, customPrompt, photoCount = 5, environment = "studio", userId } = await request.json();
 
     console.log("🎬 Начало обработки запроса на фотосессию:", {
       userId,
@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
           // Пробуем еще раз с очень простым промптом
           const simplePrompt = `Professional portrait photograph in ${envDesc}. Natural lighting, high quality.`;
           
-          const retryResponse = await fetch(apiUrl, {
+          const retryResponse = await fetch(WAVESPEED_API_URL, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

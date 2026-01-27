@@ -25,7 +25,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [intensity, setIntensity] = useState<"pretty" | "hot">("pretty");
   const [environment, setEnvironment] = useState<"original" | "home" | "bathtub" | "bedroom" | "office">("original");
-  const [model, setModel] = useState<"bytedance" | "nanobana">("bytedance");
+  // Используем только bytedance seedream-v4.5
   const [unAuthGenerations, setUnAuthGenerations] = useState(0); // Для неавторизованных
   const [showAuthModal, setShowAuthModal] = useState(false); // Модаль регистрации
   const [isMobile, setIsMobile] = useState(false);
@@ -224,8 +224,8 @@ export default function Home() {
           imageUrl: image,
           intensity,
           environment,
-          model,
           userId: user?.id,
+          customPrompt: customPrompt || "",
         }),
       });
 
@@ -716,7 +716,6 @@ export default function Home() {
                     key={mode.id}
                     onClick={() => {
                       setIntensity(mode.id as "pretty" | "hot");
-                      if (mode.id === "hot") setModel("bytedance");
                     }}
                     disabled={mode.id !== "pretty" && !userData}
                     className={intensity === mode.id ? "liquid-glass-btn-dark" : "liquid-glass-btn"}
@@ -748,39 +747,6 @@ export default function Home() {
               }}>
                 {t('modelLabel')}
               </h3>
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: intensity === "hot" ? "1fr" : "1fr 1fr",
-                gap: "10px",
-              }}>
-                {[
-                  { id: "bytedance", label: "ByteDance", desc: t('fast') },
-                  ...(intensity === "pretty" ? [{ id: "nanobana", label: "NanoBana", desc: t('quality') }] : []),
-                ].map((m) => (
-                  <button
-                    key={m.id}
-                    onClick={() => setModel(m.id as "bytedance" | "nanobana")}
-                    className={model === m.id ? "liquid-glass-btn-dark" : "liquid-glass-btn"}
-                    style={{
-                      padding: "18px 16px",
-                      borderRadius: "12px",
-                      cursor: "pointer",
-                      fontSize: "15px",
-                      fontWeight: 700,
-                      border: "none",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    {m.label}
-                    <div style={{ fontSize: "11px", fontWeight: 400, opacity: 0.7 }}>
-                      {m.desc}
-                    </div>
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* Environment Selection */}

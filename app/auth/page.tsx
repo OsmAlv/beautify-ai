@@ -50,19 +50,19 @@ function AuthPageContent() {
         return;
       }
 
-      setSuccess("✅ Email подтвержден! Переходим на главную...");
+      setSuccess(t('emailVerified'));
       setTimeout(() => {
         window.location.href = "/";
       }, 1000);
     } catch (err) {
-      setError("Ошибка при проверке кода");
+      setError(t('verificationError'));
       setLoading(false);
     }
   }
 
   async function handleResendCode() {
     if (!verificationEmail) {
-      setError("Введите email");
+      setError(t('enterEmail'));
       return;
     }
 
@@ -142,11 +142,11 @@ function AuthPageContent() {
             error: result.error,
             full: result,
           });
-          setError(`Ошибка регистрации: ${result.error}`);
+          setError(`${t('signupError')}: ${result.error}`);
           return;
         }
 
-        setSuccess("✅ Регистрация успешна! Проверьте свою почту - мы отправили 6-значный код.");
+        setSuccess(t('signupSuccess'));
         setShowVerification(true);
         setVerificationEmail(email);
         setEmail("");
@@ -166,7 +166,7 @@ function AuthPageContent() {
           return;
         }
 
-        setSuccess("✅ Успешный вход!");
+        setSuccess(t('loginSuccess'));
         
         // Небольшая задержка чтобы показать сообщение об успехе
         setTimeout(() => {
@@ -276,14 +276,14 @@ function AuthPageContent() {
         
         {success && (
           <div style={{
-            color: "#2e7d32",
+            color: "#1976d2",
             marginBottom: "20px",
             padding: "14px 18px",
-            background: "rgba(200, 230, 201, 0.5)",
+            background: "rgba(227, 242, 253, 0.7)",
             backdropFilter: "blur(10px)",
             borderRadius: "12px",
             fontSize: "14px",
-            border: "1px solid rgba(46, 125, 50, 0.2)",
+            border: "1px solid rgba(25, 118, 210, 0.3)",
           }}>
             {success}
           </div>

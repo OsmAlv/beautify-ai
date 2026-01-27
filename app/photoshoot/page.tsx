@@ -26,7 +26,7 @@ export default function Photoshoot() {
   const [customPrompt, setCustomPrompt] = useState("");
   const [photoCount, setPhotoCount] = useState(5);
   const [environment, setEnvironment] = useState("studio");
-  const [model, setModel] = useState("nanobana"); // nanobana или bytedance
+  // Используем только bytedance seedream-v4.5
   const [isMobile, setIsMobile] = useState(false);
   const [progressMessage, setProgressMessage] = useState<string>("");
   const [progressPercent, setProgressPercent] = useState<number>(0);
