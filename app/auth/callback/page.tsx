@@ -43,7 +43,9 @@ export default function AuthCallbackPage() {
               });
           }
 
-          router.push('/');
+          // Принудительный редирект на правильный домен
+          const productionDomain = process.env.NEXT_PUBLIC_APP_URL || 'https://www.makemeaphoto.com';
+          window.location.href = productionDomain;
         } else {
           setError("No session found");
           setTimeout(() => router.push('/auth'), 2000);
