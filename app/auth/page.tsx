@@ -94,7 +94,15 @@ function AuthPageContent() {
     setError(null);
 
     try {
-      const redirectUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+      // Хардкод production URL для надежности
+      const isProduction = typeof window !== 'undefined' && 
+        (window.location.hostname === 'www.makemeaphoto.com' || 
+         window.location.hostname === 'makemeaphoto.com');
+      
+      const redirectUrl = isProduction 
+        ? 'https://www.makemeaphoto.com'
+        : 'http://localhost:3000';
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
