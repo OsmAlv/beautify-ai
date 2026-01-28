@@ -8,7 +8,7 @@ export const supabase = createBrowserClient(
   {
     auth: {
       persistSession: true,
-      storageKey: 'beautify-ai-auth',
+      storageKey: 'sb-auth-token',
       storage: typeof window !== 'undefined' ? window.localStorage : undefined,
       detectSessionInUrl: true,
       flowType: 'pkce',

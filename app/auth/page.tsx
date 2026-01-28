@@ -98,18 +98,24 @@ function AuthPageContent() {
         provider: "google",
         options: {
           redirectTo: window.location.origin + "/auth/callback",
+          skipBrowserRedirect: false,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       });
 
       if (error) {
         setError(`Google вход не удался: ${error.message}`);
         console.error("Google sign in error:", error);
+        setLoading(false);
       }
+      // Не убираем loading - редирект произойдет автоматически
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "Неизвестная ошибка";
       setError(`❌ Ошибка: ${errorMsg}`);
       console.error("Google auth error:", err);
-    } finally {
       setLoading(false);
     }
   }

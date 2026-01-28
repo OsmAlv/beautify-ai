@@ -99,7 +99,7 @@ export default function PricingPage() {
           price_amount: plan.price,
           price_currency: 'usd',
           order_id: orderId,
-          order_description: `Beautify.AI - План ${plan.name}`,
+          order_description: `MakeMeAPhoto - План ${plan.name}`,
         }),
       });
 

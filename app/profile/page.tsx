@@ -60,38 +60,53 @@ export default function ProfilePage() {
   const [imageLoading, setImageLoading] = useState(false);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/");
+    // СНАЧАЛА очищаем все хранилище полностью
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    try {
+      // Пытаемся сделать signOut
+      await supabase.auth.signOut({ scope: 'global' });
+    } catch (error) {
+      // Игнорируем ошибки
+    }
+    
+    // Очищаем все cookies
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+    
+    // Принудительный ПОЛНЫЙ перезагруз страницы с очисткой кеша
+    window.location.href = "/auth";
+    
+    // На всякий случай еще один вариант через 100ms
+    setTimeout(() => {
+      window.location.replace("/auth");
+    }, 100);
   };
 
   useEffect(() => {
     let mounted = true;
     
     const checkAuth = async () => {
-      console.log("🔍 Начинаем проверку авторизации...");
-      
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
-      console.log("📊 Сессия:", session ? "есть" : "нет");
-
       if (!session) {
-        console.log("❌ Нет сессии, редирект на /auth");
-        router.push("/auth");
+        window.location.href = "/auth";
         return;
       }
 
       if (!mounted) {
-        console.log("⚠️ Компонент размонтирован");
         return;
       }
 
-      console.log("✅ Устанавливаем пользователя");
       setUser({ id: session.user.id, email: session.user.email || "" });
 
       // Получаем данные пользователя из таблицы users
-      console.log("📥 Загружаем профиль из БД...");
       const { data: profile } = await supabase
         .from("users")
         .select("*")
@@ -798,7 +813,7 @@ export default function ProfilePage() {
                       <div style={{ display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }}>
                         <a
                           href={selectedGen.image_url}
-                          download={`beautify-${selectedGen.mode}-${selectedGen.id}.jpg`}
+                          download={`makemeaphoto-${selectedGen.mode}-${selectedGen.id}.jpg`}
                           style={{
                             display: "inline-block",
                             padding: "10px 20px",
@@ -816,7 +831,7 @@ export default function ProfilePage() {
                         {selectedGen.original_image_url && (
                           <a
                             href={selectedGen.original_image_url}
-                            download={`beautify-original-${selectedGen.id}.jpg`}
+                            download={`makemeaphoto-original-${selectedGen.id}.jpg`}
                             style={{
                               display: "inline-block",
                               padding: "10px 20px",

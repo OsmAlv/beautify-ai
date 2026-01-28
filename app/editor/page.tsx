@@ -5,6 +5,11 @@ import { supabase } from "@/lib/supabase";
 import { useTranslation } from "@/contexts/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { userRateLimiter } from "@/lib/rateLimiter";
+import { apiQueue } from "@/lib/requestQueue";
+import { safeFetch } from "@/lib/retry";
+import { cache } from "@/lib/cache";
+import { validateImageUpload, sanitizePrompt } from "@/lib/security";
 
 interface UserData {
   id: string;
@@ -57,14 +62,10 @@ export default function Home() {
       setUnAuthGenerations(parseInt(savedGenerations || "0"));
       
       // Загрузить кэшированные данные пользователя если есть
-      const cachedUserData = localStorage.getItem("cached_user_data");
+      const cachedUserData = cache.get<UserData>("user_data");
       if (cachedUserData) {
-        try {
-          setUserData(JSON.parse(cachedUserData));
-          console.log("✅ Loaded cached user data from localStorage");
-        } catch (e) {
-          console.error("Failed to parse cached user data:", e);
-        }
+        setUserData(cachedUserData);
+        console.log("✅ Loaded cached user data (TTL cache)");
       }
     }
 
@@ -77,10 +78,18 @@ export default function Home() {
         const userId = authUser?.id || session?.user?.id;
         setUser(authUser || session?.user || null);
         
+        // Проверить кэш перед запросом к БД
+        const cachedData = cache.get<UserData>(`user_data_${userId}`);
+        if (cachedData) {
+          setUserData(cachedData);
+          console.log("✅ User data loaded from cache");
+          return;
+        }
+        
         // Аgressивная загрузка профиля с retry
         let userData = null;
         let retries = 0;
-        const maxRetries = 5; // Увеличили обратно
+        const maxRetries = 5;
         
         while (!userData && retries <= maxRetries) {
           const { data } = await supabase
@@ -92,6 +101,9 @@ export default function Home() {
           if (data) {
             console.log("✅ User profile loaded on attempt", retries + 1);
             setUserData(data);
+            // Кешируем на 5 минут
+            cache.set(`user_data_${userId}`, data, 300);
+            cache.set("user_data", data, 300);
             return;
           }
           
@@ -176,22 +188,128 @@ export default function Home() {
     }
   }, [userData]);
 
+  // Функция сжатия изображения
+  async function compressImage(file: File, maxSizeMB: number = 5, maxWidthOrHeight: number = 2048): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Масштабируем если изображение слишком большое
+          if (width > maxWidthOrHeight || height > maxWidthOrHeight) {
+            if (width > height) {
+              height = (height / width) * maxWidthOrHeight;
+              width = maxWidthOrHeight;
+            } else {
+              width = (width / height) * maxWidthOrHeight;
+              height = maxWidthOrHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Failed to get canvas context'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Начинаем с качества 0.95 и уменьшаем если нужно
+          let quality = 0.95;
+          const tryCompress = () => {
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) {
+                  reject(new Error('Failed to compress image'));
+                  return;
+                }
+
+                const sizeMB = blob.size / (1024 * 1024);
+                
+                if (sizeMB > maxSizeMB && quality > 0.5) {
+                  quality -= 0.05;
+                  tryCompress();
+                } else {
+                  const compressedReader = new FileReader();
+                  compressedReader.onload = (event) => {
+                    resolve(event.target?.result as string);
+                  };
+                  compressedReader.onerror = reject;
+                  compressedReader.readAsDataURL(blob);
+                }
+              },
+              'image/jpeg',
+              quality
+            );
+          };
+
+          tryCompress();
+        };
+        img.onerror = reject;
+        img.src = e.target?.result as string;
+      };
+      
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setImage(event.target?.result as string);
-      setResult(null);
+    // Валидация файла
+    const validation = validateImageUpload(file);
+    if (!validation.valid) {
+      setError(validation.error || 'Ошибка валидации файла');
+      return;
+    }
+
+    // Проверяем размер файла (больше 5MB?)
+    const fileSizeMB = file.size / (1024 * 1024);
+    
+    if (fileSizeMB > 5) {
       setError(null);
-    };
-    reader.readAsDataURL(file);
+      setResult(null);
+      // Сжимаем изображение
+      compressImage(file)
+        .then((compressedImage) => {
+          setImage(compressedImage);
+          console.log(`✅ Изображение сжато: ${fileSizeMB.toFixed(2)}MB → ${(compressedImage.length / (1024 * 1024)).toFixed(2)}MB`);
+        })
+        .catch((err) => {
+          console.error('Ошибка сжатия:', err);
+          setError('Не удалось обработать изображение');
+        });
+    } else {
+      // Файл небольшой, загружаем как есть
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImage(event.target?.result as string);
+        setResult(null);
+        setError(null);
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   async function send() {
     if (!image) {
       setError("Загрузи изображение");
+      return;
+    }
+
+    // Проверка rate limit для пользователя
+    if (!(await userRateLimiter.checkLimit())) {
+      setError("Слишком много запросов. Пожалуйста, подождите немного.");
       return;
     }
 
@@ -217,24 +335,31 @@ export default function Home() {
     setError(null);
 
     try {
-      const response = await fetch("/api/agent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          imageUrl: image,
-          intensity,
-          environment,
-          userId: user?.id,
-          customPrompt: customPrompt || "",
-        }),
+      // Санитизация пользовательского промпта
+      const sanitizedPrompt = customPrompt.trim() ? sanitizePrompt(customPrompt) : undefined;
+      
+      // Добавляем запрос в очередь
+      const data = await apiQueue.add(async () => {
+        const response = await safeFetch("/api/agent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageUrl: image,
+            intensity,
+            environment,
+            model: "bytedance",
+            userId: user?.id,
+            customPrompt: sanitizedPrompt,
+          }),
+        }, 2); // 2 retry попытки
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Ошибка при обработке");
+        }
+
+        return response.json();
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || "Ошибка при обработке");
-        return;
-      }
 
       // Если есть imageUrl - показываем напрямую
       if (data.imageUrl) {
@@ -243,6 +368,8 @@ export default function Home() {
       // Если есть generation_id - показываем плейсхолдер с ссылкой на профиль
       else if (data.generation_id) {
         setResult(`generation_${data.generation_id}`);
+      } else {
+        setResult(data.result);
       }
 
       // Если неавторизован - увеличить счётчик локально
@@ -264,10 +391,14 @@ export default function Home() {
 
         if (updatedUser) {
           setUserData(updatedUser);
+          // Обновляем кэш
+          cache.set(`user_data_${user.id}`, updatedUser, 300);
+          cache.set("user_data", updatedUser, 300);
         }
       }
-    } catch {
-      setError("Ошибка при отправке");
+    } catch (err: any) {
+      setError(err.message || "Ошибка при отправке");
+      console.error("Send error:", err);
     } finally {
       setLoading(false);
     }

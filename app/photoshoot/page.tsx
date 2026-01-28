@@ -6,6 +6,10 @@ import { supabase } from "@/lib/supabase";
 import { useTranslation } from "@/contexts/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { userRateLimiter } from "@/lib/rateLimiter";
+import { apiQueue } from "@/lib/requestQueue";
+import { safeFetch } from "@/lib/retry";
+import { cache } from "@/lib/cache";
 
 interface UserData {
   id: string;
@@ -81,26 +85,127 @@ export default function Photoshoot() {
     };
   }, []);
 
+  // Функция сжатия изображения
+  async function compressImage(file: File, maxSizeMB: number = 5, maxWidthOrHeight: number = 2048): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Масштабируем если изображение слишком большое
+          if (width > maxWidthOrHeight || height > maxWidthOrHeight) {
+            if (width > height) {
+              height = (height / width) * maxWidthOrHeight;
+              width = maxWidthOrHeight;
+            } else {
+              width = (width / height) * maxWidthOrHeight;
+              height = maxWidthOrHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Failed to get canvas context'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Начинаем с качества 0.95 и уменьшаем если нужно
+          let quality = 0.95;
+          const tryCompress = () => {
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) {
+                  reject(new Error('Failed to compress image'));
+                  return;
+                }
+
+                const sizeMB = blob.size / (1024 * 1024);
+                
+                if (sizeMB > maxSizeMB && quality > 0.5) {
+                  quality -= 0.05;
+                  tryCompress();
+                } else {
+                  const compressedReader = new FileReader();
+                  compressedReader.onload = (event) => {
+                    resolve(event.target?.result as string);
+                  };
+                  compressedReader.onerror = reject;
+                  compressedReader.readAsDataURL(blob);
+                }
+              },
+              'image/jpeg',
+              quality
+            );
+          };
+
+          tryCompress();
+        };
+        img.onerror = reject;
+        img.src = e.target?.result as string;
+      };
+      
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     const newImages: string[] = [];
     let loadedCount = 0;
+    const totalFiles = files.length;
 
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        newImages.push(event.target?.result as string);
+    Array.from(files).forEach(async (file) => {
+      try {
+        const fileSizeMB = file.size / (1024 * 1024);
+        let imageData: string;
+
+        if (fileSizeMB > 5) {
+          // Сжимаем большое изображение
+          imageData = await compressImage(file);
+          console.log(`✅ Изображение сжато: ${fileSizeMB.toFixed(2)}MB → ~${(imageData.length / (1024 * 1024)).toFixed(2)}MB`);
+        } else {
+          // Загружаем как есть
+          imageData = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (event) => resolve(event.target?.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        }
+
+        newImages.push(imageData);
         loadedCount++;
         
-        if (loadedCount === files.length) {
+        if (loadedCount === totalFiles) {
           setImages(prev => [...prev, ...newImages]);
           setResults([]);
           setError(null);
         }
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        console.error('Ошибка обработки изображения:', err);
+        loadedCount++;
+        
+        if (loadedCount === totalFiles && newImages.length > 0) {
+          setImages(prev => [...prev, ...newImages]);
+          setResults([]);
+          setError(null);
+        } else if (loadedCount === totalFiles && newImages.length === 0) {
+          setError('Не удалось загрузить изображения');
+        }
+      }
     });
   }
 
@@ -114,6 +219,12 @@ export default function Photoshoot() {
       return;
     }
 
+    // Проверка rate limit
+    if (!(await userRateLimiter.checkLimit())) {
+      setError("Слишком много запросов. Пожалуйста, подождите немного.");
+      return;
+    }
+
     // Проверяем авторизацию
     const { data: { session } } = await supabase.auth.getSession();
     const currentUser = session?.user || user;
@@ -123,12 +234,22 @@ export default function Photoshoot() {
       return;
     }
 
-    // Загружаем актуальные данные пользователя
-    const { data: currentUserData } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", currentUser.id)
-      .single();
+    // Проверяем кэш
+    let currentUserData = cache.get<UserData>(`user_data_${currentUser.id}`);
+    
+    if (!currentUserData) {
+      // Загружаем актуальные данные пользователя
+      const { data } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", currentUser.id)
+        .single();
+      
+      currentUserData = data;
+      if (data) {
+        cache.set(`user_data_${currentUser.id}`, data, 300);
+      }
+    }
 
     const costPerPhoto = 50; // 50 nippies за фото
     const totalCost = photoCount * costPerPhoto;
