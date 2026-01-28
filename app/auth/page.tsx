@@ -19,6 +19,22 @@ function AuthPageContent() {
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationEmail, setVerificationEmail] = useState("");
 
+  // Форсированный редирект на production домен
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      const isVercelDomain = hostname.includes('vercel.app');
+      const isProduction = hostname === 'www.makemeaphoto.com' || hostname === 'makemeaphoto.com';
+      
+      if (isVercelDomain && !hostname.includes('localhost')) {
+        // Редиректим на production с сохранением query параметров
+        const searchParams = window.location.search;
+        window.location.replace(`https://www.makemeaphoto.com/auth${searchParams}`);
+        return;
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const mode = searchParams.get('mode');
     if (mode === 'signup') {

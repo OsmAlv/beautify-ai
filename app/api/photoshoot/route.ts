@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
           input_fidelity: "high", // КЛЮЧЕВОЙ параметр для сохранения лица!
           output_format: "jpeg", // Формат вывода
           guidance_scale: 12.0, // МАКСИМАЛЬНО строгое следование промпту о сохранении лица
-          strength: 0.25, // МИНИМАЛЬНЫЕ изменения (50% изменений, 50% оригинал)
+          strength: 0.40, // МИНИМАЛЬНЫЕ изменения (50% изменений, 50% оригинал)
           num_inference_steps: 75, // Больше шагов = лучшее качество и точность
         }),
         signal: AbortSignal.timeout(60000), // Тайм-аут 60 секунд

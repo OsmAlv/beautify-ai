@@ -59,7 +59,7 @@ export default function Header() {
 
   return (
     <header style={{
-      padding: isMobile ? '12px 16px' : '16px 40px',
+      padding: isMobile ? '12px 20px' : '16px 40px',
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
