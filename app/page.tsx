@@ -212,10 +212,6 @@ export default function LandingPage() {
                     fontSize: '20px',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
-                    ':hover': {
-                      background: 'rgba(194,24,91,0.2)',
-                      transform: 'scale(1.1)',
-                    },
                   }}
                 >
                   {icon}
