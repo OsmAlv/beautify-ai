@@ -1153,6 +1153,18 @@ export const translations = {
       nl: 'MAKEN...',
       tr: 'OLUŞTURULUYOR...',
     },
+    uploadPhotosFirst: {
+      en: 'UPLOAD PHOTOS FIRST',
+      ru: 'СНАЧАЛА ЗАГРУЗИТЕ ФОТО',
+      fr: 'TÉLÉCHARGEZ D\'ABORD DES PHOTOS',
+      de: 'LADEN SIE ZUERST FOTOS HOCH',
+      it: 'CARICA PRIMA LE FOTO',
+      es: 'CARGUE FOTOS PRIMERO',
+      pt: 'CARREGUE FOTOS PRIMEIRO',
+      pl: 'NAJPIERW PRZEŚLIJ ZDJĘCIA',
+      nl: 'UPLOAD EERST FOTO\'S',
+      tr: 'ÖNCE FOTOĞRAF YÜKLEYİN',
+    },
     uploadError: {
       en: 'Upload at least one photo',
       ru: 'Загрузите хотя бы одну фотографию',

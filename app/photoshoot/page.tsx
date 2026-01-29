@@ -214,14 +214,18 @@ export default function Photoshoot() {
   }
 
   async function generatePhotoshoot() {
+    console.log("🎬 generatePhotoshoot вызвана, images:", images.length, "loading:", loading);
+    
     if (images.length === 0) {
       setError(t('uploadError'));
+      console.log("❌ Нет изображений");
       return;
     }
 
     // Проверка rate limit
     if (!(await userRateLimiter.checkLimit())) {
       setError("Слишком много запросов. Пожалуйста, подождите немного.");
+      console.log("❌ Rate limit exceeded");
       return;
     }
 
@@ -778,7 +782,7 @@ export default function Photoshoot() {
 
           {/* Generate Button */}
           <button
-            onClick={generatePhotoshoot}
+            onClick={images.length > 0 && !loading ? generatePhotoshoot : undefined}
             disabled={loading || images.length === 0}
             className={loading || images.length === 0 ? "" : "liquid-glass-btn-dark"}
             style={{
@@ -796,7 +800,7 @@ export default function Photoshoot() {
               transition: "all 0.3s ease",
             }}
           >
-            {loading ? t('creating') : t('createPhotoshoot')}
+            {loading ? t('creating') : images.length === 0 ? t('uploadPhotosFirst') : t('createPhotoshoot')}
           </button>
 
           {/* Estimated Time */}
