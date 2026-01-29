@@ -1,29 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Устанавливаем максимальное время выполнения для Vercel
+export const maxDuration = 300; // 5 минут
+export const dynamic = 'force-dynamic';
+
 const WAVESPEED_API_KEY = process.env.WAVESPEED_API_KEY;
 const WAVESPEED_API_URL = "https://api.wavespeed.ai/api/v3/bytedance/seedream-v4.5/edit";
 const WAVESPEED_RESULT_URL = "https://api.wavespeed.ai/api/v3/predictions";
 
-async function waitForResult(requestId: string, maxAttempts = 120) {
+async function waitForResult(requestId: string, maxAttempts = 60) { // Уменьшил с 120 до 60
   for (let i = 0; i < maxAttempts; i++) {
-    const response = await fetch(`${WAVESPEED_RESULT_URL}/${requestId}/result`, {
-      headers: {
-        Authorization: `Bearer ${WAVESPEED_API_KEY}`,
-      },
-    });
+    try {
+      const response = await fetch(`${WAVESPEED_RESULT_URL}/${requestId}/result`, {
+        headers: {
+          Authorization: `Bearer ${WAVESPEED_API_KEY}`,
+        },
+        signal: AbortSignal.timeout(10000), // 10 секунд на запрос статуса
+      });
 
-    const data = await response.json();
-    const status = data.data?.status;
+      if (!response.ok) {
+        throw new Error(`Status check failed: ${response.status}`);
+      }
 
-    if (status === "completed") {
-      return data.data;
+      const data = await response.json();
+      const status = data.data?.status;
+
+      if (status === "completed") {
+        return data.data;
+      }
+
+      if (status === "failed") {
+        throw new Error(`AI обработка не удалась: ${data.data?.error || 'Unknown error'}`);
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    } catch (error) {
+      console.error(`Attempt ${i + 1} failed:`, error);
+      if (i === maxAttempts - 1) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 3000));
     }
-
-    if (status === "failed") {
-      throw new Error(`AI обработка не удалась: ${data.data?.error}`);
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 3000));
   }
 
   throw new Error(`Превышено время ожидания (${maxAttempts * 3} секунд)`);
@@ -297,9 +312,11 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
+    console.error("❌ Photoshoot API error:", error);
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Неизвестная ошибка сервера",
+        details: error instanceof Error ? error.stack : undefined,
       },
       { status: 500 }
     );

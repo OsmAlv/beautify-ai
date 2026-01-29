@@ -309,7 +309,17 @@ export default function Photoshoot() {
         }),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error("❌ Ошибка парсинга JSON:", jsonError);
+        if (progressInterval) clearInterval(progressInterval);
+        setProgressMessage("");
+        setError(`Ошибка сервера: ${response.status} ${response.statusText}. Попробуйте еще раз.`);
+        return;
+      }
+
       console.log("📡 Ответ от API:", data);
 
       if (progressInterval) clearInterval(progressInterval);
