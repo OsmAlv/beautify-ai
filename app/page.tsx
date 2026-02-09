@@ -182,52 +182,13 @@ export default function LandingPage() {
 
           {/* Main Content Area */}
           <div style={{
-            display: 'flex',
             background: '#0A0A0A',
             minHeight: '450px',
+            padding: '24px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-start',
           }}>
-            {/* Left Toolbar */}
-            <div style={{
-              width: '70px',
-              background: 'rgba(255,255,255,0.03)',
-              borderRight: '1px solid rgba(255,255,255,0.1)',
-              display: 'flex',
-              flexDirection: 'column',
-              padding: '20px 0',
-              gap: '6px',
-              alignItems: 'center',
-            }}>
-              {['✨', '🔥', '📸', '🎨', '✂️', '🌟'].map((icon, i) => (
-                <div
-                  key={i}
-                  style={{
-                    width: '44px',
-                    height: '44px',
-                    borderRadius: '10px',
-                    background: i < 3 ? 'rgba(194,24,91,0.15)' : 'rgba(255,255,255,0.05)',
-                    border: i < 3 ? '1px solid rgba(194,24,91,0.3)' : '1px solid rgba(255,255,255,0.1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '20px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                  }}
-                >
-                  {icon}
-                </div>
-              ))}
-            </div>
-
-            {/* Cards Grid */}
-            <div style={{
-              flex: 1,
-              padding: '24px',
-              overflowY: 'auto',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'flex-start',
-            }}>
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
@@ -355,38 +316,18 @@ export default function LandingPage() {
                       fontSize: '22px',
                       fontWeight: 800,
                       color: '#fff',
-                      marginBottom: '6px',
+                      marginBottom: '8px',
                       fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
                     }}>
                       {t('prettyModeTitle')}
                     </h3>
                     <p style={{
                       fontSize: '13px',
-                      color: 'rgba(255,255,255,0.5)',
-                      marginBottom: '10px',
-                      lineHeight: '1.6',
+                      color: 'rgba(255,255,255,0.65)',
+                      lineHeight: '1.7',
                     }}>
-                      {t('prettyModeDesc')}
+                      {t('prettyModeDescDetailed')}
                     </p>
-                    <div style={{
-                      display: 'flex',
-                      gap: '6px',
-                      flexWrap: 'wrap',
-                    }}>
-                      {['Skin', 'Makeup', 'Retouch'].map(tag => (
-                        <span key={tag} style={{
-                          background: 'rgba(194,24,91,0.2)',
-                          color: '#FF4081',
-                          padding: '4px 10px',
-                          borderRadius: '12px',
-                          fontSize: '11px',
-                          fontWeight: 600,
-                          border: '1px solid rgba(194,24,91,0.3)',
-                        }}>
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
                   </div>
                 </div>
 
@@ -508,38 +449,18 @@ export default function LandingPage() {
                       fontSize: '22px',
                       fontWeight: 800,
                       color: '#fff',
-                      marginBottom: '6px',
+                      marginBottom: '8px',
                       fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
                     }}>
                       {t('hotModeTitle')}
                     </h3>
                     <p style={{
                       fontSize: '13px',
-                      color: 'rgba(255,255,255,0.5)',
-                      marginBottom: '10px',
-                      lineHeight: '1.6',
+                      color: 'rgba(255,255,255,0.65)',
+                      lineHeight: '1.7',
                     }}>
-                      {t('hotModeDesc')}
+                      {t('hotModeDescDetailed')}
                     </p>
-                    <div style={{
-                      display: 'flex',
-                      gap: '6px',
-                      flexWrap: 'wrap',
-                    }}>
-                      {['Prompts', 'Style', 'Effects'].map(tag => (
-                        <span key={tag} style={{
-                          background: 'rgba(156,39,176,0.2)',
-                          color: '#BA68C8',
-                          padding: '4px 10px',
-                          borderRadius: '12px',
-                          fontSize: '11px',
-                          fontWeight: 600,
-                          border: '1px solid rgba(156,39,176,0.3)',
-                        }}>
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
                   </div>
                 </div>
 
@@ -713,44 +634,21 @@ export default function LandingPage() {
                       fontSize: '22px',
                       fontWeight: 800,
                       color: '#fff',
-                      marginBottom: '6px',
+                      marginBottom: '8px',
                       fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
                     }}>
                       {t('photoshootTitle')}
                     </h3>
                     <p style={{
                       fontSize: '13px',
-                      color: 'rgba(255,255,255,0.5)',
-                      marginBottom: '10px',
-                      lineHeight: '1.6',
+                      color: 'rgba(255,255,255,0.65)',
+                      lineHeight: '1.7',
                     }}>
-                      {t('photoshootDesc')}
+                      {t('photoshootDescDetailed')}
                     </p>
-                    <div style={{
-                      display: 'flex',
-                      gap: '6px',
-                      flexWrap: 'wrap',
-                    }}>
-                      {['Batch', '4 Photos', 'Fast'].map(tag => (
-                        <span key={tag} style={{
-                          background: 'rgba(63,81,181,0.2)',
-                          color: '#7986CB',
-                          padding: '4px 10px',
-                          borderRadius: '12px',
-                          fontSize: '11px',
-                          fontWeight: 600,
-                          border: '1px solid rgba(63,81,181,0.3)',
-                        }}>
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
                   </div>
                 </div>
-
-
               </div>
-            </div>
           </div>
         </div>
       </section>

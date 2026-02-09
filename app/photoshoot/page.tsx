@@ -216,6 +216,12 @@ export default function Photoshoot() {
   async function generatePhotoshoot() {
     console.log("🎬 generatePhotoshoot вызвана, images:", images.length, "loading:", loading);
     
+    // Предотвращаем дублирующиеся запросы
+    if (loading) {
+      console.log("⚠️ Запрос уже выполняется, игнорируем повторный вызов");
+      return;
+    }
+    
     if (images.length === 0) {
       setError(t('uploadError'));
       console.log("❌ Нет изображений");
@@ -297,30 +303,71 @@ export default function Photoshoot() {
         setProgressMessage(t('progressGenerating'));
       }, 2000);
 
-      const response = await fetch("/api/photoshoot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          imageUrls: images,
-          customPrompt,
-          photoCount,
-          environment,
-          userId: currentUser.id,
-        }),
+      // Проверяем изображения перед отправкой
+      if (!images || images.length === 0) {
+        throw new Error("Изображения не загружены");
+      }
+
+      console.log("🚀 Начало запроса к API photoshoot", {
+        imagesCount: images.length,
+        photoCount,
+        environment,
+        hasCustomPrompt: !!customPrompt
       });
+
+      // Добавляем timeout для всего запроса (4 минуты)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        console.error("⏱️ Timeout запроса");
+        controller.abort();
+      }, 240000); // 4 минуты
+
+      let response;
+      try {
+        response = await fetch("/api/photoshoot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageUrls: images,
+            customPrompt,
+            photoCount,
+            environment,
+            userId: currentUser.id,
+          }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId);
+        if (fetchError.name === 'AbortError') {
+          throw new Error("Превышено время ожидания. Попробуйте с меньшим количеством фото или позже.");
+        }
+        throw fetchError;
+      }
+
+      console.log("📥 Получен ответ от API, status:", response.status);
 
       let data;
       try {
-        data = await response.json();
+        const responseText = await response.text();
+        console.log("📄 Raw response:", responseText.substring(0, 200));
+        data = JSON.parse(responseText);
       } catch (jsonError) {
         console.error("❌ Ошибка парсинга JSON:", jsonError);
         if (progressInterval) clearInterval(progressInterval);
         setProgressMessage("");
-        setError(`Ошибка сервера: ${response.status} ${response.statusText}. Попробуйте еще раз.`);
+        setProgressPercent(0);
+        setError(`Ошибка сервера: ${response.status}. Сервер вернул некорректные данные. Попробуйте еще раз или обратитесь в поддержку.`);
         return;
       }
 
-      console.log("📡 Ответ от API:", data);
+      console.log("📡 Распарсенный ответ от API:", {
+        ok: response.ok,
+        status: response.status,
+        hasResults: !!data?.results,
+        resultsCount: data?.results?.length,
+        error: data?.error
+      });
 
       if (progressInterval) clearInterval(progressInterval);
       setProgressPercent(90);
@@ -329,7 +376,21 @@ export default function Photoshoot() {
         console.error("❌ Ошибка от API:", response.status, data);
         if (progressInterval) clearInterval(progressInterval);
         setProgressMessage("");
-        setError(data.error || `Ошибка ${response.status}: ${response.statusText}`);
+        setProgressPercent(0);
+        
+        // Более понятные сообщения об ошибках
+        let errorMessage = data.error || `Ошибка ${response.status}`;
+        if (response.status === 401) {
+          errorMessage = "Требуется авторизация. Пожалуйста, войдите в аккаунт.";
+        } else if (response.status === 402) {
+          errorMessage = data.error || "Недостаточно nippies для генерации.";
+        } else if (response.status === 500) {
+          errorMessage = "Ошибка сервера. Попробуйте позже или обратитесь в поддержку.";
+        } else if (response.status === 504) {
+          errorMessage = "Сервер не успел обработать запрос. Попробуйте с меньшим количеством фото.";
+        }
+        
+        setError(errorMessage);
         return;
       }
 
@@ -365,12 +426,27 @@ export default function Photoshoot() {
           setUserData(updatedUser);
         }
       }
-    } catch (err) {
-      console.error("Ошибка:", err);
+    } catch (err: any) {
+      console.error("❌ Критическая ошибка в generatePhotoshoot:", {
+        message: err.message,
+        name: err.name,
+        stack: err.stack,
+      });
       if (progressInterval) clearInterval(progressInterval);
       setProgressMessage("");
       setProgressPercent(0);
-      setError("Ошибка при отправке запроса");
+      
+      // Более понятные сообщения об ошибках
+      let userMessage = "Ошибка при отправке запроса";
+      if (err.message?.includes("Failed to fetch")) {
+        userMessage = "Ошибка подключения к серверу. Проверьте интернет-соединение.";
+      } else if (err.message?.includes("timeout") || err.message?.includes("Превышено время")) {
+        userMessage = "Превышено время ожидания. Попробуйте с меньшим количеством фото.";
+      } else if (err.message) {
+        userMessage = err.message;
+      }
+      
+      setError(userMessage);
     } finally {
       if (progressInterval) clearInterval(progressInterval);
       setLoading(false);

@@ -72,10 +72,23 @@ async function translateToEnglish(text: string): Promise<string> {
 }
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  console.log("🎬 Photoshoot API запущен", { timestamp: new Date().toISOString() });
+  
   try {
     const { imageUrls, customPrompt, photoCount = 5, environment = "studio", userId } = await request.json();
 
+    console.log("📥 Получены параметры:", {
+      userId,
+      photoCount,
+      environment,
+      hasImages: !!imageUrls,
+      imagesCount: imageUrls?.length,
+      hasCustomPrompt: !!customPrompt
+    });
+
     if (!userId) {
+      console.error("❌ userId отсутствует");
       return NextResponse.json(
         { error: "Требуется авторизация" },
         { status: 401 }
@@ -83,6 +96,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!imageUrls || imageUrls.length === 0) {
+      console.error("❌ imageUrls отсутствуют или пусты");
       return NextResponse.json(
         { error: "Необходимо загрузить хотя бы одну фотографию" },
         { status: 400 }
@@ -312,11 +326,17 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error("❌ Photoshoot API error:", error);
+    const duration = Date.now() - startTime;
+    console.error("❌ Photoshoot API error:", {
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined,
+      duration: `${duration}ms`,
+      timestamp: new Date().toISOString()
+    });
+    
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Неизвестная ошибка сервера",
-        details: error instanceof Error ? error.stack : undefined,
+        error: error instanceof Error ? error.message : "Неизвестная ошибка сервера. Попробуйте еще раз или обратитесь в поддержку.",
       },
       { status: 500 }
     );
